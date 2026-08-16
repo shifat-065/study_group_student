@@ -29,7 +29,7 @@ import goalSvgPaths from "@/imports/MobileStudyGroupStudentSubgroupTodysGoal-1/s
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Screen = "groupList" | "joinGroup" | "joinGroupPending" | "home" | "activity" | "rank" | "members" | "subgroups" | "subgroupDetail" | "todayGoal" | "monthlyGoal" | "examAttendanceMembers" | "monthlyGoalExamDetail" | "discussion" | "facebookGroup" | "examPage" | "quickLinkPage";
+type Screen = "groupList" | "joinGroup" | "confirmJoinRequest" | "joinGroupPending" | "home" | "activity" | "rank" | "members" | "subgroups" | "subgroupDetail" | "todayGoal" | "monthlyGoal" | "examAttendanceMembers" | "monthlyGoalExamDetail" | "discussion" | "facebookGroup" | "examPage" | "quickLinkPage";
 
 interface Group {
   id: number;
@@ -4775,6 +4775,37 @@ function GroupGuidelinesBottomSheet({ onClose }: { onClose: () => void }) {
   );
 }
 
+// Group card body shared by the Group List (tappable) and Confirm Join Request
+// (static) screens — logo, name, discount badge, category/rank/members row, admin.
+function GroupSummaryCard({ group }: { group: Group }) {
+  const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
+  return (
+    <div className="flex gap-3 p-3 w-full items-start">
+      <GroupLogo size={40} />
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px] truncate" style={ns}>{group.name}</span>
+          <div className="bg-[#b7dfb9] rounded-[4px] px-2 h-5 flex items-center shrink-0">
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#264a34] leading-[16px]" style={ns}>{group.discount}%</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="bg-[#eaeef6] rounded-[4px] px-2 h-5 flex items-center shrink-0">
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#484848] leading-[16px]" style={ns}>{group.category}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Trophy className="size-3.5 text-[#665200]" strokeWidth={1.5} />
+            <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>{group.rank}</span>
+          </div>
+          <span className="text-[#484848] text-[12px]">•</span>
+          <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>{group.members} members</span>
+        </div>
+        <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#484848] leading-[16px]" style={ns}>Admin: {group.admin}</span>
+      </div>
+    </div>
+  );
+}
+
 function GroupListScreen({ onBack, onSelectGroup }: { onBack: () => void; onSelectGroup: (group: Group) => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [categoryFilter, setCategoryFilter] = useState<GroupCategoryFilter>("All groups");
@@ -4844,29 +4875,7 @@ function GroupListScreen({ onBack, onSelectGroup }: { onBack: () => void; onSele
               onClick={() => onSelectGroup(group)}
               className="bg-[#f4f6fa] rounded-[12px] text-left active:opacity-80 transition-opacity"
             >
-              <div className="flex gap-3 p-3 w-full items-start">
-                <GroupLogo size={40} />
-                <div className="flex-1 min-w-0 flex flex-col gap-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px] truncate" style={ns}>{group.name}</span>
-                    <div className="bg-[#b7dfb9] rounded-[4px] px-2 h-5 flex items-center shrink-0">
-                      <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#264a34] leading-[16px]" style={ns}>{group.discount}%</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="bg-[#eaeef6] rounded-[4px] px-2 h-5 flex items-center shrink-0">
-                      <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#484848] leading-[16px]" style={ns}>{group.category}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Trophy className="size-3.5 text-[#665200]" strokeWidth={1.5} />
-                      <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>{group.rank}</span>
-                    </div>
-                    <span className="text-[#484848] text-[12px]">•</span>
-                    <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>{group.members} members</span>
-                  </div>
-                  <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#484848] leading-[16px]" style={ns}>Admin: {group.admin}</span>
-                </div>
-              </div>
+              <GroupSummaryCard group={group} />
             </button>
           ))}
           {filteredGroups.length === 0 && (
@@ -5068,6 +5077,77 @@ function JoinGroupScreen({ group, onBack, onJoin }: { group: Group; onBack: () =
   );
 }
 
+// ── Screen: Join Group / Confirm Join Request ─────────────────────────────────
+
+function ConfirmJoinRequestScreen({ group, onBack, onCancel, onConfirm }: { group: Group; onBack: () => void; onCancel: () => void; onConfirm: (notes: string) => void }) {
+  const [notes, setNotes] = useState("");
+  const [agreed, setAgreed] = useState(true);
+
+  return (
+    <div className="flex flex-col h-full bg-white overflow-hidden">
+      <AppHeader title="Confirm your joining request" onBack={onBack} />
+
+      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5">Selected Group:</span>
+          <div className="bg-[#f4f6fa] rounded-[12px]">
+            <GroupSummaryCard group={group} />
+          </div>
+        </div>
+
+        <div className="relative flex-1 min-h-[160px] border border-[#787878] rounded-[12px]">
+          <span className="absolute -top-[10px] left-3 bg-white px-1 font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#484848] leading-4">
+            Notes
+          </span>
+          <textarea
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            placeholder="Input"
+            className="w-full h-full min-h-[160px] p-4 bg-transparent font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black outline-none rounded-[12px] resize-none placeholder:text-black placeholder:font-medium"
+          />
+        </div>
+      </div>
+
+      <div className="shrink-0 flex flex-col gap-4 px-4 pb-3">
+        <button onClick={() => setAgreed(v => !v)} className="flex items-start gap-2 text-left active:opacity-70 transition-opacity">
+          <div
+            className={clsx(
+              "size-5 rounded-[4px] shrink-0 mt-0.5 flex items-center justify-center",
+              agreed ? "bg-[#1441cc]" : "border-2 border-[#787878]",
+            )}
+          >
+            {agreed && <Check className="size-3.5 text-white" strokeWidth={3} />}
+          </div>
+          <span className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-black leading-5">
+            By confirming, I agree to the terms and conditions of the group.
+          </span>
+        </button>
+
+        <div className="flex gap-2">
+          <button
+            onClick={onCancel}
+            className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center active:bg-gray-50 transition-colors"
+          >
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848]">Cancel</span>
+          </button>
+          <button
+            disabled={!agreed}
+            onClick={() => onConfirm(notes)}
+            className={clsx(
+              "flex-1 h-12 rounded-full flex items-center justify-center transition-opacity",
+              agreed ? "bg-[#1441cc] active:opacity-90" : "bg-black/10 cursor-not-allowed",
+            )}
+          >
+            <span className={clsx("font-['Noto_Sans',sans-serif] font-medium text-[14px]", agreed ? "text-white" : "text-black opacity-38")}>
+              Confirm
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Screen: Join Group / Pending ──────────────────────────────────────────────
 
 function JoinGroupPendingScreen({ group, onBack, onApproved }: { group: Group; onBack: () => void; onApproved: () => void }) {
@@ -5231,7 +5311,27 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <JoinGroupScreen group={selectedGroup} onBack={goBack} onJoin={() => goTo("joinGroupPending")} />
+            <JoinGroupScreen group={selectedGroup} onBack={goBack} onJoin={() => goTo("confirmJoinRequest")} />
+          </motion.div>
+        )}
+
+        {screen === "confirmJoinRequest" && selectedGroup && (
+          <motion.div
+            key="confirmJoinRequest"
+            custom={dir}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={slideTrans}
+            className="absolute inset-0"
+          >
+            <ConfirmJoinRequestScreen
+              group={selectedGroup}
+              onBack={goBack}
+              onCancel={goBack}
+              onConfirm={() => goTo("joinGroupPending")}
+            />
           </motion.div>
         )}
 
