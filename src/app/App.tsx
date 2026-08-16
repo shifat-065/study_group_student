@@ -3615,7 +3615,7 @@ function ActivityProgressBar({ pct }: { pct: number }) {
   );
 }
 
-function CaptainDetailsBottomSheet({ sg, onClose, onEdit }: { sg: SubgroupData; onClose: () => void; onEdit: () => void }) {
+function CaptainDetailsBottomSheet({ sg, onClose }: { sg: SubgroupData; onClose: () => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   return (
     <motion.div
@@ -3638,11 +3638,8 @@ function CaptainDetailsBottomSheet({ sg, onClose, onEdit }: { sg: SubgroupData; 
           <div className="bg-[#787878] h-1 rounded-full w-8" />
         </div>
 
-        <div className="flex items-center justify-between px-4 pb-4 shrink-0">
+        <div className="px-4 pb-4 shrink-0">
           <p className="font-['Noto_Sans',sans-serif] font-normal text-[24px] leading-[32px] text-black" style={ns}>Captain Details</p>
-          <button onClick={onEdit} aria-label="Edit" className="size-10 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors">
-            <Pencil className="size-5 text-[#484848]" strokeWidth={1.5} />
-          </button>
         </div>
 
         <div className="border-t border-[#e3e3e3]" />
@@ -3673,84 +3670,11 @@ function CaptainDetailsBottomSheet({ sg, onClose, onEdit }: { sg: SubgroupData; 
   );
 }
 
-function ChooseCaptainBottomSheet({ current, onCancel, onSave }: { current: string; onCancel: () => void; onSave: (name: string) => void }) {
-  const [choice, setChoice] = useState(() => CREATE_SUBGROUP_CANDIDATES.some(c => c.name === current) ? current : CREATE_SUBGROUP_CANDIDATES[0].name);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="absolute inset-0 z-50 flex flex-col justify-end bg-black/40"
-      onClick={onCancel}
-    >
-      <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "tween", duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-        className="bg-white rounded-tl-[16px] rounded-tr-[16px] shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden max-h-[85vh]"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex flex-col items-center p-4 shrink-0">
-          <div className="bg-[#787878] h-1 rounded-full w-8" />
-        </div>
-        <p className="px-4 pb-4 font-['Noto_Sans',sans-serif] font-normal text-[24px] leading-[32px] text-black">Choose group captain</p>
-        <div className="border-t border-[#c7c5ce]" />
-
-        <div className="flex-1 overflow-y-auto flex flex-col">
-          {CREATE_SUBGROUP_CANDIDATES.map((candidate, i) => {
-            const chip = CHIP_STYLES[pctToChip(candidate.pct)];
-            return (
-              <div key={candidate.name}>
-                <button
-                  onClick={() => setChoice(candidate.name)}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-left active:bg-gray-50 transition-colors"
-                >
-                  <MemberAvatar size={30} />
-                  <span className="flex-1 min-w-0 font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-6 truncate">
-                    {candidate.name}
-                  </span>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="rounded-[16px] h-6 px-3 flex items-center justify-center shrink-0" style={{ backgroundColor: chip.bg }}>
-                      <span className="font-['Noto_Sans',sans-serif] text-[12px] font-medium" style={{ color: chip.text }}>
-                        {candidate.pct.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="relative size-5 shrink-0 rounded-full border-2 flex items-center justify-center" style={{ borderColor: choice === candidate.name ? "#1441cc" : "#787878" }}>
-                      {choice === candidate.name && <div className="size-2.5 rounded-full bg-[#1441cc]" />}
-                    </div>
-                  </div>
-                </button>
-                {i < CREATE_SUBGROUP_CANDIDATES.length - 1 && <div className="mx-4 border-t border-[#C7C5CE]" />}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="shrink-0 flex items-center gap-3 p-3">
-          <button onClick={onCancel} className="px-6 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center active:bg-gray-50 transition-colors">
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-[#484848]">Cancel</span>
-          </button>
-          <button
-            onClick={() => onSave(choice)}
-            className="flex-1 h-12 rounded-full bg-[#1441cc] flex items-center justify-center active:opacity-90 transition-opacity"
-          >
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-white">Save</span>
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal, onCaptainSaved }: { onBack: () => void; sg: SubgroupData; onTodayGoal: () => void; onMonthlyGoal: () => void; onCaptainSaved: (name: string) => void }) {
+function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal }: { onBack: () => void; sg: SubgroupData; onTodayGoal: () => void; onMonthlyGoal: () => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [sortBy, setSortBy] = useState<MemberSort>("attendance");
   const [sorting, setSorting] = useState(false);
   const [showCaptain, setShowCaptain] = useState(false);
-  const [choosingCaptain, setChoosingCaptain] = useState(false);
   const [selected, setSelected] = useState<Member | null>(null);
 
   const sortedMembers = MEMBER_LIST.slice().sort((a, b) => (
@@ -3819,14 +3743,6 @@ function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal, onCaptai
           <CaptainDetailsBottomSheet
             sg={sg}
             onClose={() => setShowCaptain(false)}
-            onEdit={() => { setShowCaptain(false); setChoosingCaptain(true); }}
-          />
-        )}
-        {choosingCaptain && (
-          <ChooseCaptainBottomSheet
-            current={sg.captain}
-            onCancel={() => setChoosingCaptain(false)}
-            onSave={(name) => { setChoosingCaptain(false); onCaptainSaved(name); }}
           />
         )}
         {selected && (
@@ -4140,19 +4056,6 @@ function SubgroupListScreen({ onBack, group, onDetail }: { onBack: () => void; g
     </div>
   );
 }
-
-interface SubgroupCandidate { name: string; pct: number; assignedTo: string | null }
-
-const CREATE_SUBGROUP_CANDIDATES: SubgroupCandidate[] = [
-  { name: "আরিফ হোসেন", pct: 85.0, assignedTo: null },
-  { name: "মেহজাবিন সুলতানা", pct: 85.0, assignedTo: "B" },
-  { name: "রাহুল চৌধুরী", pct: 85.0, assignedTo: "B" },
-  { name: "লিসিতা করিম", pct: 85.0, assignedTo: null },
-  { name: "সুমাইয়া রহমান", pct: 85.0, assignedTo: null },
-  { name: "তানভীর আহমেদ", pct: 85.0, assignedTo: null },
-  { name: "নুসরাত জাহান", pct: 85.0, assignedTo: null },
-  { name: "সাইফুল ইসলাম", pct: 85.0, assignedTo: null },
-];
 
 function AttendanceSortBottomSheet({ desc, onSelect, onClose }: { desc: boolean; onSelect: (desc: boolean) => void; onClose: () => void }) {
   const options = [{ id: true, label: "High to low" }, { id: false, label: "Low to high" }];
@@ -5519,7 +5422,6 @@ function PrototypeApp() {
               onBack={goBack}
               onTodayGoal={() => { setTodayGoalOverride(null); goTo("todayGoal"); }}
               onMonthlyGoal={() => { setTodayGoalOverride(null); goTo("monthlyGoal"); }}
-              onCaptainSaved={(name) => { setSelectedSubgroup(prev => prev ? { ...prev, captain: name } : prev); showSnackbar("Captain updated"); }}
             />
           </motion.div>
         )}
