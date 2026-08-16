@@ -3,10 +3,10 @@ import { imgCalendarMonth, imgEmojiEvents, imgEmojiEvents1 } from "@/imports/Mob
 import svgRankPaths from "@/imports/MobileStudyGroupStudentGroupRank/svg-npjyrr8ymv";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  ArrowLeft, ChevronDown, Check, Info,
+  ArrowLeft, ChevronDown, Check, Info, AlertCircle,
   UserPlus, Search, ArrowUpDown, ChevronRight,
   ThumbsUp, MessageCircle, Share2, Send, Globe, MoreHorizontal, ImageIcon, Star, User, Users,
-  CalendarDays, Archive, ClipboardCheck, Trophy, FileText, Copy, Pencil, X,
+  CalendarDays, Archive, ClipboardCheck, Trophy, FileText, Copy, Pencil, X, Gift, Headphones, Sprout,
   Filter, Calendar, Clock, Award, Presentation, FileSpreadsheet, BarChart3,
   type LucideIcon,
 } from "lucide-react";
@@ -4633,49 +4633,156 @@ function MonthlyGoalExamDetailScreen({ examName, onBack }: { examName: string; o
 
 // ── Screen: Group List (onboarding) ───────────────────────────────────────────
 
-function GroupListScreen({ onSelectGroup }: { onSelectGroup: (group: Group) => void }) {
+// Circular multi-color mark standing in for each group's logo — no real group photos
+// are available, so every group gets the same three-tone pie rather than a blank avatar.
+function GroupLogo({ size = 40 }: { size?: number }) {
+  return (
+    <div
+      className="rounded-full shrink-0"
+      style={{
+        width: size,
+        height: size,
+        background: "conic-gradient(#4285f4 0deg 130deg, #fbbc05 130deg 245deg, #34a853 245deg 360deg)",
+      }}
+    />
+  );
+}
+
+const GROUP_LIST_BENEFITS: Array<{ id: string; Icon: LucideIcon; iconBg: string; iconColor: string; title: string; subtitle: string }> = [
+  { id: "discount", Icon: Gift, iconBg: "#fdecd2", iconColor: "#a9601a", title: "Discount", subtitle: "Get 5% discount on all packages" },
+  { id: "support", Icon: Headphones, iconBg: "#dbeafe", iconColor: "#1d4ed8", title: "Support", subtitle: "Get instant support from fellow group members" },
+  { id: "grow", Icon: Sprout, iconBg: "#dcfce7", iconColor: "#166534", title: "Grow together", subtitle: "Push yourself up to the mark" },
+];
+
+const GROUP_CATEGORY_OPTIONS = ["All groups", "BCS", "Bank", "DP", "NTRCA", "BAR / BJS"] as const;
+type GroupCategoryFilter = typeof GROUP_CATEGORY_OPTIONS[number];
+
+function GroupCategoryFilterSheet({ value, onSelect, onClose }: { value: GroupCategoryFilter; onSelect: (v: GroupCategoryFilter) => void; onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="absolute inset-0 z-50 flex flex-col justify-end bg-black/40"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "tween", duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+        className="bg-white rounded-tl-[16px] rounded-tr-[16px] shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pb-4"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex flex-col items-center p-4 shrink-0">
+          <div className="bg-[#787878] h-1 rounded-full w-8" />
+        </div>
+        <div className="flex flex-col">
+          {GROUP_CATEGORY_OPTIONS.map(opt => (
+            <button
+              key={opt}
+              onClick={() => { onSelect(opt); onClose(); }}
+              className="h-14 flex items-center gap-4 px-4 active:bg-gray-50 transition-colors text-left"
+            >
+              <div className="relative size-5 shrink-0 rounded-full border-2 flex items-center justify-center" style={{ borderColor: value === opt ? "#1441cc" : "#787878" }}>
+                {value === opt && <div className="size-2.5 rounded-full bg-[#1441cc]" />}
+              </div>
+              <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-6">{opt}</span>
+            </button>
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function GroupListScreen({ onBack, onSelectGroup }: { onBack: () => void; onSelectGroup: (group: Group) => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
+  const [categoryFilter, setCategoryFilter] = useState<GroupCategoryFilter>("All groups");
+  const [filtering, setFiltering] = useState(false);
+
+  const filteredGroups = categoryFilter === "All groups" ? GROUPS : GROUPS.filter(g => g.category === categoryFilter);
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden">
-      <div className="shrink-0 flex flex-col gap-1 px-4 pt-6 pb-4">
-        <p className="font-['Noto_Sans',sans-serif] font-medium text-[24px] text-black leading-[32px]">Study Group</p>
-        <p className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#787878] leading-[20px]">
-          Choose a group to join and get started.
-        </p>
-      </div>
+    <div className="flex flex-col h-full bg-white overflow-hidden relative">
+      <AnimatePresence>
+        {filtering && (
+          <GroupCategoryFilterSheet value={categoryFilter} onSelect={setCategoryFilter} onClose={() => setFiltering(false)} />
+        )}
+      </AnimatePresence>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-2">
-        {GROUPS.map(group => (
-          <button
-            key={group.id}
-            onClick={() => onSelectGroup(group)}
-            className="bg-[#f4f6fa] rounded-[12px] text-left active:opacity-80 transition-opacity"
-          >
-            <div className="flex gap-3 p-3 w-full items-start">
-              <GroupAvatar size={48} />
-              <div className="flex-1 min-w-0 flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px] truncate" style={ns}>{group.name}</span>
-                  <div className="bg-[#0c5fff] rounded-[4px] px-2 h-5 flex items-center shrink-0">
-                    <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-white leading-[16px]" style={ns}>Open to Join</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="bg-[#eaeef6] rounded-[4px] px-2 h-5 flex items-center shrink-0">
-                    <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#484848] leading-[16px]" style={ns}>{group.category}</span>
-                  </div>
-                  <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#484848] leading-[16px]" style={ns}>Created: {group.createdDate}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>#{group.rank} rank</span>
-                  <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>{group.members}/{group.maxMembers} members</span>
-                  <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>{group.subgroups} subgroups</span>
-                </div>
+      <AppHeader
+        title="Study group"
+        onBack={onBack}
+        trailing={<AlertCircle className="size-6 text-black" strokeWidth={1.5} />}
+      />
+
+      <div className="flex-1 overflow-y-auto">
+        {/* Benefits */}
+        <div className="flex flex-col gap-4 px-4 py-4">
+          {GROUP_LIST_BENEFITS.map(({ id, Icon, iconBg, iconColor, title, subtitle }) => (
+            <div key={id} className="flex items-center gap-3">
+              <div className="size-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: iconBg }}>
+                <Icon className="size-5" style={{ color: iconColor }} strokeWidth={1.75} />
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col">
+                <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5" style={ns}>{title}</span>
+                <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#787878] leading-4" style={ns}>{subtitle}</span>
               </div>
             </div>
+          ))}
+        </div>
+
+        {/* Available Groups header + filter */}
+        <div className="flex items-center justify-between px-4 pb-3">
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-6" style={ns}>Available Groups</span>
+          <button
+            onClick={() => setFiltering(true)}
+            className="h-9 flex items-center gap-1 pl-3 pr-2 rounded-full border border-[#c7c7c7] active:bg-gray-50 transition-colors"
+          >
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5" style={ns}>{categoryFilter}</span>
+            <ChevronDown className="size-4 text-[#484848]" strokeWidth={2} />
           </button>
-        ))}
+        </div>
+
+        {/* Group cards */}
+        <div className="px-4 pb-4 flex flex-col gap-2">
+          {filteredGroups.map(group => (
+            <button
+              key={group.id}
+              onClick={() => onSelectGroup(group)}
+              className="bg-[#f4f6fa] rounded-[12px] text-left active:opacity-80 transition-opacity"
+            >
+              <div className="flex gap-3 p-3 w-full items-start">
+                <GroupLogo size={40} />
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px] truncate" style={ns}>{group.name}</span>
+                    <div className="bg-[#b7dfb9] rounded-[4px] px-2 h-5 flex items-center shrink-0">
+                      <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#264a34] leading-[16px]" style={ns}>{group.discount}%</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="bg-[#eaeef6] rounded-[4px] px-2 h-5 flex items-center shrink-0">
+                      <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#484848] leading-[16px]" style={ns}>{group.category}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Trophy className="size-3.5 text-[#665200]" strokeWidth={1.5} />
+                      <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>{group.rank}</span>
+                    </div>
+                    <span className="text-[#484848] text-[12px]">•</span>
+                    <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>{group.members} members</span>
+                  </div>
+                  <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#484848] leading-[16px]" style={ns}>Admin: {group.admin}</span>
+                </div>
+              </div>
+            </button>
+          ))}
+          {filteredGroups.length === 0 && (
+            <p className="py-8 text-center font-['Noto_Sans',sans-serif] text-[14px] text-[#787878]">No groups in this category.</p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -4917,7 +5024,7 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <GroupListScreen onSelectGroup={(group) => { setSelectedGroup(group); goTo("joinGroup"); }} />
+            <GroupListScreen onBack={goBack} onSelectGroup={(group) => { setSelectedGroup(group); goTo("joinGroup"); }} />
           </motion.div>
         )}
 
