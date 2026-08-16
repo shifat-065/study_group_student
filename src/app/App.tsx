@@ -29,7 +29,7 @@ import goalSvgPaths from "@/imports/MobileStudyGroupStudentSubgroupTodysGoal-1/s
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Screen = "onboarding" | "joinGroup" | "joinGroupPending" | "home" | "activity" | "rank" | "members" | "subgroups" | "subgroupDetail" | "todayGoal" | "monthlyGoal" | "examAttendanceMembers" | "monthlyGoalExamDetail" | "discussion" | "facebookGroup" | "examPage" | "quickLinkPage";
+type Screen = "groupList" | "joinGroup" | "joinGroupPending" | "home" | "activity" | "rank" | "members" | "subgroups" | "subgroupDetail" | "todayGoal" | "monthlyGoal" | "examAttendanceMembers" | "monthlyGoalExamDetail" | "discussion" | "facebookGroup" | "examPage" | "quickLinkPage";
 
 interface Group {
   id: number;
@@ -4631,31 +4631,51 @@ function MonthlyGoalExamDetailScreen({ examName, onBack }: { examName: string; o
   );
 }
 
-// ── Screen: Onboarding ────────────────────────────────────────────────────────
+// ── Screen: Group List (onboarding) ───────────────────────────────────────────
 
-function OnboardingScreen({ onGetStarted }: { onGetStarted: () => void }) {
+function GroupListScreen({ onSelectGroup }: { onSelectGroup: (group: Group) => void }) {
+  const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
+
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden">
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8">
-        <div className="size-24 rounded-full bg-[#eaeef6] flex items-center justify-center">
-          <Users className="size-11 text-[#1441cc]" strokeWidth={1.5} />
-        </div>
-        <div className="flex flex-col gap-2 items-center">
-          <p className="font-['Noto_Sans',sans-serif] font-medium text-[24px] text-black leading-[32px] text-center">
-            Welcome to Study Group
-          </p>
-          <p className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#787878] leading-[20px] text-center max-w-[280px]">
-            Join a group, keep up with daily and monthly goals, and track your exam attendance alongside other students.
-          </p>
-        </div>
+      <div className="shrink-0 flex flex-col gap-1 px-4 pt-6 pb-4">
+        <p className="font-['Noto_Sans',sans-serif] font-medium text-[24px] text-black leading-[32px]">Study Group</p>
+        <p className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#787878] leading-[20px]">
+          Choose a group to join and get started.
+        </p>
       </div>
-      <div className="shrink-0 p-3">
-        <button
-          onClick={onGetStarted}
-          className="w-full h-14 bg-[#1441cc] rounded-full flex items-center justify-center active:opacity-90 transition-opacity"
-        >
-          <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-white tracking-[0.15px]">Get started</span>
-        </button>
+
+      <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-2">
+        {GROUPS.map(group => (
+          <button
+            key={group.id}
+            onClick={() => onSelectGroup(group)}
+            className="bg-[#f4f6fa] rounded-[12px] text-left active:opacity-80 transition-opacity"
+          >
+            <div className="flex gap-3 p-3 w-full items-start">
+              <GroupAvatar size={48} />
+              <div className="flex-1 min-w-0 flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px] truncate" style={ns}>{group.name}</span>
+                  <div className="bg-[#0c5fff] rounded-[4px] px-2 h-5 flex items-center shrink-0">
+                    <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-white leading-[16px]" style={ns}>Open to Join</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="bg-[#eaeef6] rounded-[4px] px-2 h-5 flex items-center shrink-0">
+                    <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#484848] leading-[16px]" style={ns}>{group.category}</span>
+                  </div>
+                  <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#484848] leading-[16px]" style={ns}>Created: {group.createdDate}</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>#{group.rank} rank</span>
+                  <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>{group.members}/{group.maxMembers} members</span>
+                  <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-[16px]" style={ns}>{group.subgroups} subgroups</span>
+                </div>
+              </div>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -4815,8 +4835,8 @@ function JoinGroupPendingScreen({ group, onBack, onApproved }: { group: Group; o
 // ──────────────────────────────────────────────────────────────────────────────
 
 function PrototypeApp() {
-  const [stack, setStack] = useState<Screen[]>(["onboarding"]);
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(GROUPS[0]);
+  const [stack, setStack] = useState<Screen[]>(["groupList"]);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [selectedSubgroup, setSelectedSubgroup] = useState<SubgroupData | null>(null);
   const [selectedExamName, setSelectedExamName] = useState<string | null>(null);
   const [selectedExamAttended, setSelectedExamAttended] = useState(0);
@@ -4886,9 +4906,9 @@ function PrototypeApp() {
     <div className="relative w-full h-full overflow-hidden">
       <AnimatePresence mode="popLayout" custom={dir}>
 
-        {screen === "onboarding" && (
+        {screen === "groupList" && (
           <motion.div
-            key="onboarding"
+            key="groupList"
             custom={dir}
             variants={slideVariants}
             initial="enter"
@@ -4897,7 +4917,7 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <OnboardingScreen onGetStarted={() => goTo("joinGroup")} />
+            <GroupListScreen onSelectGroup={(group) => { setSelectedGroup(group); goTo("joinGroup"); }} />
           </motion.div>
         )}
 
