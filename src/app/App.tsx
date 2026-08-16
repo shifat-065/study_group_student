@@ -4885,7 +4885,7 @@ function GroupListScreen({ onBack, onSelectGroup }: { onBack: () => void; onSele
 function JoinGroupInfoCard({ group, onShowAdminDetails }: { group: Group; onShowAdminDetails: () => void }) {
   return (
     <div className="flex gap-3 items-start">
-      <GroupAvatar size={60} />
+      <GroupLogo size={60} />
       <div className="flex-1 min-w-0 flex flex-col gap-2">
         <p className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px]">{group.name}</p>
         <div className="flex flex-col gap-1">
@@ -4921,9 +4921,107 @@ function JoinGroupInfoCard({ group, onShowAdminDetails }: { group: Group; onShow
   );
 }
 
+// Six-month "% of goal reached" bar chart shown on the Join Group preview — same fraction
+// labels as the Figma mock, but bar color is derived from the real percentage via
+// goalBarColor so red/yellow/green always matches the legend beneath it.
+const JOIN_GROUP_MONTHLY_BARS: Array<{ month: string; attended: number; total: number }> = [
+  { month: "Jan", attended: 12, total: 20 },
+  { month: "Feb", attended: 4, total: 16 },
+  { month: "Mar", attended: 13, total: 22 },
+  { month: "Apr", attended: 28, total: 31 },
+  { month: "May", attended: 6, total: 15 },
+  { month: "Jun", attended: 22, total: 40 },
+];
+
+function GroupGoalGraphCard({ group }: { group: Group }) {
+  const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
+  const cols = { gridTemplateColumns: `repeat(${JOIN_GROUP_MONTHLY_BARS.length}, minmax(0, 1fr))` };
+  return (
+    <div className="bg-[#f4f6fa] rounded-[16px] p-3 flex flex-col gap-2">
+      <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-black leading-4" style={ns}>% of goal reached, by month</span>
+
+      <div className="grid gap-x-1" style={cols}>
+        {JOIN_GROUP_MONTHLY_BARS.map(bar => (
+          <span key={bar.month} className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#484848] leading-4 text-center">
+            {bar.attended}/{bar.total}
+          </span>
+        ))}
+      </div>
+      <div className="grid gap-x-1 h-[100px] items-end" style={cols}>
+        {JOIN_GROUP_MONTHLY_BARS.map(bar => (
+          <div key={bar.month} className={clsx("rounded-t-sm", goalBarColor((bar.attended / bar.total) * 100))} style={{ height: `${Math.max((bar.attended / bar.total) * 100, 6)}px` }} />
+        ))}
+      </div>
+      <div className="grid gap-x-1" style={cols}>
+        {JOIN_GROUP_MONTHLY_BARS.map(bar => (
+          <span key={bar.month} className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#484848] leading-4 text-center">{bar.month}</span>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap pt-1">
+        {[["#6fcf73", ">=75%"], ["#ffc94a", "40-74%"], ["#eb5757", "<40%"]].map(([bg, label]) => (
+          <div key={label} className="flex items-center gap-1">
+            <div className="size-2.5 rounded-[4px]" style={{ backgroundColor: bg }} />
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#484848] leading-4" style={ns}>{label}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="h-px bg-[#c7c5ce] my-1" />
+
+      <div className="flex items-stretch gap-3">
+        <div className="flex-1 flex flex-col gap-1">
+          <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#484848] leading-4" style={ns}>Total exams</span>
+          <span className="font-['Roboto',sans-serif] font-semibold text-[16px] text-black leading-6 tracking-[0.15px]">{group.totalExams}</span>
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#484848] leading-4" style={ns}>{group.avgAttendance.toFixed(1)}% avg. attendance</span>
+        </div>
+        <div className="w-px bg-[#c7c5ce]" />
+        <div className="flex-1 flex flex-col gap-1">
+          <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#484848] leading-4" style={ns}>Monthly goal</span>
+          <span className="font-['Roboto',sans-serif] font-semibold text-[16px] text-black leading-6 tracking-[0.15px]">{group.monthlyGoal}</span>
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#484848] leading-4" style={ns}>{group.avgAttendance.toFixed(1)}% achievement ratio</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Read-only preview of the group's mandatory exams — same rows as GroupMemberScreen's
+// list, minus the tap-through (can't sit an exam before joining).
+function GroupMandatoryExamsPreview({ onShowInfo }: { onShowInfo: () => void }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px]" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
+          বাধ্যতামূলক পরীক্ষাসমূহ
+        </span>
+        <button onClick={onShowInfo} className="size-6 flex items-center justify-center shrink-0">
+          <Info className="size-[19px] text-[#484848]" strokeWidth={1.75} />
+        </button>
+      </div>
+      <div className="flex flex-col gap-1">
+        {MANDATORY_EXAMS.map((exam, i) => (
+          <div key={i} className="h-12 bg-[#f4f6fa] rounded-[8px] flex items-center px-4 gap-2">
+            <span className="flex-1 font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-[20px] truncate" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
+              {exam.name}
+            </span>
+            {exam.isLive && (
+              <div className="bg-red-500 flex items-center gap-1 px-2 rounded-[8px] shrink-0">
+                <div className="size-[6px] rounded-full bg-white" />
+                <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-white leading-[16px]">Live</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function JoinGroupScreen({ group, onBack, onJoin }: { group: Group; onBack: () => void; onJoin: () => void }) {
   const [showAdminDetails, setShowAdminDetails] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [showExamsInfo, setShowExamsInfo] = useState(false);
 
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden relative">
@@ -4937,6 +5035,7 @@ function JoinGroupScreen({ group, onBack, onJoin }: { group: Group; onBack: () =
           />
         )}
         {showRules && <GroupRulesBottomSheet onClose={() => setShowRules(false)} />}
+        {showExamsInfo && <MandatoryExamsInfoBottomSheet onClose={() => setShowExamsInfo(false)} />}
       </AnimatePresence>
 
       <AppHeader title="Study Group" onBack={onBack} />
@@ -4944,30 +5043,26 @@ function JoinGroupScreen({ group, onBack, onJoin }: { group: Group; onBack: () =
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
         <JoinGroupInfoCard group={group} onShowAdminDetails={() => setShowAdminDetails(true)} />
 
-        <div className="h-px bg-[#e3e3e3]" />
-
-        <div className="flex flex-col gap-1">
-          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5">About this group</span>
-          <p className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#484848] leading-5">
-            {group.totalExams} exams held so far • {group.avgAttendance.toFixed(1)}% average attendance • {group.monthlyGoal} monthly goal
-          </p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowRules(true)}
+            className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
+          >
+            <AlertCircle className="size-5 text-[#484848]" strokeWidth={1.5} />
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848]">গ্রুপের নিয়মাবলী</span>
+          </button>
+          <button
+            onClick={onJoin}
+            className="flex-1 h-12 bg-[#1441cc] rounded-full flex items-center justify-center gap-2 active:opacity-90 transition-opacity"
+          >
+            <UserPlus className="size-5 text-white" strokeWidth={1.75} />
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-white">Join Group</span>
+          </button>
         </div>
-      </div>
 
-      <div className="shrink-0 flex gap-2 p-3">
-        <button
-          onClick={() => setShowRules(true)}
-          className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
-        >
-          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848]">Group rules</span>
-        </button>
-        <button
-          onClick={onJoin}
-          className="flex-1 h-12 bg-[#1441cc] rounded-full flex items-center justify-center gap-2 active:opacity-90 transition-opacity"
-        >
-          <UserPlus className="size-5 text-white" strokeWidth={1.75} />
-          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-white">Join Group</span>
-        </button>
+        <GroupGoalGraphCard group={group} />
+
+        <GroupMandatoryExamsPreview onShowInfo={() => setShowExamsInfo(true)} />
       </div>
     </div>
   );
@@ -4978,6 +5073,7 @@ function JoinGroupScreen({ group, onBack, onJoin }: { group: Group; onBack: () =
 function JoinGroupPendingScreen({ group, onBack, onApproved }: { group: Group; onBack: () => void; onApproved: () => void }) {
   const [showAdminDetails, setShowAdminDetails] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [showExamsInfo, setShowExamsInfo] = useState(false);
 
   // Demo-only stand-in for the admin actually reviewing the request — auto-advances
   // into the group after a short wait so the rest of the prototype stays reachable.
@@ -4998,6 +5094,7 @@ function JoinGroupPendingScreen({ group, onBack, onApproved }: { group: Group; o
           />
         )}
         {showRules && <GroupRulesBottomSheet onClose={() => setShowRules(false)} />}
+        {showExamsInfo && <MandatoryExamsInfoBottomSheet onClose={() => setShowExamsInfo(false)} />}
       </AnimatePresence>
 
       <AppHeader title="Study Group" onBack={onBack} />
@@ -5011,19 +5108,24 @@ function JoinGroupPendingScreen({ group, onBack, onApproved }: { group: Group; o
             Your request to join is waiting for admin approval.
           </p>
         </div>
-      </div>
 
-      <div className="shrink-0 flex gap-2 p-3">
-        <button
-          onClick={() => setShowRules(true)}
-          className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
-        >
-          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848]">Group rules</span>
-        </button>
-        <div className="flex-1 h-12 bg-black/10 rounded-full flex items-center justify-center gap-2">
-          <Clock className="size-5 text-[#787878]" strokeWidth={1.75} />
-          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#787878]">Pending</span>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowRules(true)}
+            className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
+          >
+            <AlertCircle className="size-5 text-[#484848]" strokeWidth={1.5} />
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848]">গ্রুপের নিয়মাবলী</span>
+          </button>
+          <div className="flex-1 h-12 bg-black/10 rounded-full flex items-center justify-center gap-2">
+            <Clock className="size-5 text-[#787878]" strokeWidth={1.75} />
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#787878]">Pending</span>
+          </div>
         </div>
+
+        <GroupGoalGraphCard group={group} />
+
+        <GroupMandatoryExamsPreview onShowInfo={() => setShowExamsInfo(true)} />
       </div>
     </div>
   );
