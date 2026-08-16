@@ -6,8 +6,8 @@ import {
   ArrowLeft, ChevronDown, Check, Info,
   UserPlus, Search, ArrowUpDown, ChevronRight,
   ThumbsUp, MessageCircle, Share2, Send, Globe, MoreHorizontal, ImageIcon, Star, User, Users,
-  CalendarDays, Archive, ClipboardCheck, Trophy, Megaphone, Settings, Layers, FileText, Gavel, Download, Copy, Pencil, X, Gift, Wallet, Landmark, UserMinus, Shield, Bell, Trash2,
-  Filter, Calendar, CheckCircle2, XCircle, Clock, BookOpen, Award, Presentation, FileSpreadsheet, Sparkles, ExternalLink, BarChart3,
+  CalendarDays, Archive, ClipboardCheck, Trophy, FileText, Copy, Pencil, X,
+  Filter, Calendar, Clock, Award, Presentation, FileSpreadsheet, BarChart3,
   type LucideIcon,
 } from "lucide-react";
 import { clsx } from "clsx";
@@ -29,7 +29,7 @@ import goalSvgPaths from "@/imports/MobileStudyGroupStudentSubgroupTodysGoal-1/s
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Screen = "activity" | "rank" | "members" | "subgroups" | "subgroupDetail" | "todayGoal" | "monthlyGoal" | "examAttendanceMembers" | "monthlyGoalExamDetail" | "discussion" | "facebookGroup" | "examPage" | "quickLinkPage" | "adminHome" | "adminPanel" | "adminComingSoon" | "adminMyGroup" | "adminJoiningRequests" | "adminAnnouncement" | "adminMembersHub" | "adminZoneMembers" | "adminExamCustomisation" | "adminGroupSettings" | "adminGroupRules" | "adminGroupRulesView" | "adminCreateSubgroup";
+type Screen = "onboarding" | "joinGroup" | "joinGroupPending" | "home" | "activity" | "rank" | "members" | "subgroups" | "subgroupDetail" | "todayGoal" | "monthlyGoal" | "examAttendanceMembers" | "monthlyGoalExamDetail" | "discussion" | "facebookGroup" | "examPage" | "quickLinkPage";
 
 interface Group {
   id: number;
@@ -3020,19 +3020,6 @@ function pctToChip(pct: number): AttendanceChip {
   return pct >= 75 ? "green" : pct >= 40 ? "yellow" : "red";
 }
 
-// ── Admin: attendance zones ───────────────────────────────────────────────────
-// A separate classification from the green/yellow/red attendance chip above — zones use
-// their own thresholds (and "probation" overlaps "red"), matching the Members hub in Figma.
-
-type Zone = "red" | "yellow" | "green" | "probation";
-
-const ZONES: Record<Zone, { label: string; subtitle: string; bg: string; border: string; text: string; match: (pct: number) => boolean }> = {
-  red: { label: "Red zone", subtitle: "Below 60% attendance", bg: "#ffebee", border: "#ff3232", text: "#ff3232", match: pct => pct < 60 },
-  yellow: { label: "Yellow zone", subtitle: "60%–79% attendance", bg: "#fef9e7", border: "#784a00", text: "#784a00", match: pct => pct >= 60 && pct < 80 },
-  green: { label: "Green zone", subtitle: "80% and above attendance", bg: "#b7dfb9", border: "#264a34", text: "#264a34", match: pct => pct >= 80 },
-  probation: { label: "Probational zone", subtitle: "Below 20% attendance", bg: "#85d6ff", border: "#185a7a", text: "#185a7a", match: pct => pct < 20 },
-};
-
 // ── Subgroup data ─────────────────────────────────────────────────────────────
 
 const SUBGROUPS = [
@@ -4644,30 +4631,206 @@ function MonthlyGoalExamDetailScreen({ examName, onBack }: { examName: string; o
   );
 }
 
+// ── Screen: Onboarding ────────────────────────────────────────────────────────
+
+function OnboardingScreen({ onGetStarted }: { onGetStarted: () => void }) {
+  return (
+    <div className="flex flex-col h-full bg-white overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8">
+        <div className="size-24 rounded-full bg-[#eaeef6] flex items-center justify-center">
+          <Users className="size-11 text-[#1441cc]" strokeWidth={1.5} />
+        </div>
+        <div className="flex flex-col gap-2 items-center">
+          <p className="font-['Noto_Sans',sans-serif] font-medium text-[24px] text-black leading-[32px] text-center">
+            Welcome to Study Group
+          </p>
+          <p className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#787878] leading-[20px] text-center max-w-[280px]">
+            Join a group, keep up with daily and monthly goals, and track your exam attendance alongside other students.
+          </p>
+        </div>
+      </div>
+      <div className="shrink-0 p-3">
+        <button
+          onClick={onGetStarted}
+          className="w-full h-14 bg-[#1441cc] rounded-full flex items-center justify-center active:opacity-90 transition-opacity"
+        >
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-white tracking-[0.15px]">Get started</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Screen: Join Group ────────────────────────────────────────────────────────
+
+// Shared group-preview card for the Join Group / Join Group Pending screens — same
+// name/category/admin/stat layout as GroupMemberScreen's info card, before membership.
+function JoinGroupInfoCard({ group, onShowAdminDetails }: { group: Group; onShowAdminDetails: () => void }) {
+  return (
+    <div className="flex gap-3 items-start">
+      <GroupAvatar size={60} />
+      <div className="flex-1 min-w-0 flex flex-col gap-2">
+        <p className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px]">{group.name}</p>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <div className="bg-[#eaeef6] rounded-[4px] px-2 h-5 flex items-center">
+              <span className="font-['Noto_Sans',sans-serif] text-[10px] font-medium text-[#484848]">{group.category}</span>
+            </div>
+            <span className="font-['Noto_Sans',sans-serif] text-[12px] text-[#484848]">Created: {group.createdDate}</span>
+          </div>
+          <button onClick={onShowAdminDetails} className="flex items-center gap-1 active:opacity-70 transition-opacity">
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#484848]">Admin: {group.admin}</span>
+            <Info className="size-[18px] text-[#484848]" strokeWidth={1.5} />
+          </button>
+        </div>
+        <div className="flex items-center gap-4">
+          <div>
+            <p className="font-['Noto_Sans',sans-serif] font-semibold text-[12px] text-black leading-[16px]">{group.rank}</p>
+            <p className="font-['Noto_Sans',sans-serif] text-[12px] text-black leading-[16px]">Rank</p>
+          </div>
+          <span className="text-[#484848] text-[12px]">•</span>
+          <div>
+            <p className="font-['Noto_Sans',sans-serif] font-semibold text-[12px] text-black leading-[16px]">{group.members}</p>
+            <p className="font-['Noto_Sans',sans-serif] text-[12px] text-black leading-[16px]">Members</p>
+          </div>
+          <span className="text-[#484848] text-[12px]">•</span>
+          <div>
+            <p className="font-['Noto_Sans',sans-serif] font-semibold text-[12px] text-black leading-[16px]">{group.subgroups}</p>
+            <p className="font-['Noto_Sans',sans-serif] text-[12px] text-black leading-[16px]">Subgroups</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function JoinGroupScreen({ group, onBack, onJoin }: { group: Group; onBack: () => void; onJoin: () => void }) {
+  const [showAdminDetails, setShowAdminDetails] = useState(false);
+  const [showRules, setShowRules] = useState(false);
+
+  return (
+    <div className="flex flex-col h-full bg-white overflow-hidden relative">
+      <AnimatePresence>
+        {showAdminDetails && (
+          <AdminDetailsBottomSheet
+            name={group.admin}
+            rating={group.adminRating}
+            since={group.createdDate}
+            onClose={() => setShowAdminDetails(false)}
+          />
+        )}
+        {showRules && <GroupRulesBottomSheet onClose={() => setShowRules(false)} />}
+      </AnimatePresence>
+
+      <AppHeader title="Study Group" onBack={onBack} />
+
+      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+        <JoinGroupInfoCard group={group} onShowAdminDetails={() => setShowAdminDetails(true)} />
+
+        <div className="h-px bg-[#e3e3e3]" />
+
+        <div className="flex flex-col gap-1">
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5">About this group</span>
+          <p className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#484848] leading-5">
+            {group.totalExams} exams held so far • {group.avgAttendance.toFixed(1)}% average attendance • {group.monthlyGoal} monthly goal
+          </p>
+        </div>
+      </div>
+
+      <div className="shrink-0 flex gap-2 p-3">
+        <button
+          onClick={() => setShowRules(true)}
+          className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
+        >
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848]">Group rules</span>
+        </button>
+        <button
+          onClick={onJoin}
+          className="flex-1 h-12 bg-[#1441cc] rounded-full flex items-center justify-center gap-2 active:opacity-90 transition-opacity"
+        >
+          <UserPlus className="size-5 text-white" strokeWidth={1.75} />
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-white">Join Group</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Screen: Join Group / Pending ──────────────────────────────────────────────
+
+function JoinGroupPendingScreen({ group, onBack, onApproved }: { group: Group; onBack: () => void; onApproved: () => void }) {
+  const [showAdminDetails, setShowAdminDetails] = useState(false);
+  const [showRules, setShowRules] = useState(false);
+
+  // Demo-only stand-in for the admin actually reviewing the request — auto-advances
+  // into the group after a short wait so the rest of the prototype stays reachable.
+  useEffect(() => {
+    const timeout = setTimeout(onApproved, 1800);
+    return () => clearTimeout(timeout);
+  }, [onApproved]);
+
+  return (
+    <div className="flex flex-col h-full bg-white overflow-hidden relative">
+      <AnimatePresence>
+        {showAdminDetails && (
+          <AdminDetailsBottomSheet
+            name={group.admin}
+            rating={group.adminRating}
+            since={group.createdDate}
+            onClose={() => setShowAdminDetails(false)}
+          />
+        )}
+        {showRules && <GroupRulesBottomSheet onClose={() => setShowRules(false)} />}
+      </AnimatePresence>
+
+      <AppHeader title="Study Group" onBack={onBack} />
+
+      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+        <JoinGroupInfoCard group={group} onShowAdminDetails={() => setShowAdminDetails(true)} />
+
+        <div className="bg-[#f4f6fa] rounded-[12px] p-3 flex items-center gap-3">
+          <Clock className="size-5 text-[#787878] shrink-0" strokeWidth={1.5} />
+          <p className="flex-1 font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#484848] leading-5">
+            Your request to join is waiting for admin approval.
+          </p>
+        </div>
+      </div>
+
+      <div className="shrink-0 flex gap-2 p-3">
+        <button
+          onClick={() => setShowRules(true)}
+          className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
+        >
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848]">Group rules</span>
+        </button>
+        <div className="flex-1 h-12 bg-black/10 rounded-full flex items-center justify-center gap-2">
+          <Clock className="size-5 text-[#787878]" strokeWidth={1.75} />
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#787878]">Pending</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 
 function PrototypeApp() {
-  const [stack, setStack] = useState<Screen[]>(["adminHome"]);
+  const [stack, setStack] = useState<Screen[]>(["onboarding"]);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(GROUPS[0]);
   const [selectedSubgroup, setSelectedSubgroup] = useState<SubgroupData | null>(null);
   const [selectedExamName, setSelectedExamName] = useState<string | null>(null);
   const [selectedExamAttended, setSelectedExamAttended] = useState(0);
-  const [announcement, setAnnouncement] = useState({
+  const announcement = {
     title: "New Announcements",
     body: "Live class on Bangladesh Affairs starts tomorrow at 8 PM",
     date: "24 May 2026",
-  });
+  };
   const [selectedExamLive, setSelectedExamLive] = useState(false);
   const [selectedQuickLink, setSelectedQuickLink] = useState<QuickLink | null>(null);
   const [selectedExamList, setSelectedExamList] = useState<Array<{ name: string; isLive: boolean }>>(MANDATORY_EXAMS);
-  const [selectedAdminItem, setSelectedAdminItem] = useState<typeof ADMIN_PANEL_ITEMS[number] | null>(null);
-  const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
   const [todayGoalOverride, setTodayGoalOverride] = useState<GoalDetailOverride | null>(null);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
-  const [showAddMember, setShowAddMember] = useState(false);
   const [showAddSubgroupMember, setShowAddSubgroupMember] = useState(false);
-  const [subgroupsAdminMode, setSubgroupsAdminMode] = useState(false);
-  const [membersAdminMode, setMembersAdminMode] = useState(false);
   const snackbarTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dirRef = useRef<1 | -1>(1);
 
@@ -4705,6 +4868,14 @@ function PrototypeApp() {
     window.history.back();
   }
 
+  // Replaces the whole stack/history — used once, when the join request is approved and
+  // the student lands on the group home screen for the rest of the session.
+  function enterHome() {
+    dirRef.current = 1;
+    window.history.replaceState({ depth: 0 }, "");
+    setStack(["home"]);
+  }
+
   function showSnackbar(message: string) {
     if (snackbarTimeoutRef.current) clearTimeout(snackbarTimeoutRef.current);
     setSnackbarMessage(message);
@@ -4714,6 +4885,55 @@ function PrototypeApp() {
   return (
     <div className="relative w-full h-full overflow-hidden">
       <AnimatePresence mode="popLayout" custom={dir}>
+
+        {screen === "onboarding" && (
+          <motion.div
+            key="onboarding"
+            custom={dir}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={slideTrans}
+            className="absolute inset-0"
+          >
+            <OnboardingScreen onGetStarted={() => goTo("joinGroup")} />
+          </motion.div>
+        )}
+
+        {screen === "joinGroup" && selectedGroup && (
+          <motion.div
+            key="joinGroup"
+            custom={dir}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={slideTrans}
+            className="absolute inset-0"
+          >
+            <JoinGroupScreen group={selectedGroup} onBack={goBack} onJoin={() => goTo("joinGroupPending")} />
+          </motion.div>
+        )}
+
+        {screen === "joinGroupPending" && selectedGroup && (
+          <motion.div
+            key="joinGroupPending"
+            custom={dir}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={slideTrans}
+            className="absolute inset-0"
+          >
+            <JoinGroupPendingScreen
+              group={selectedGroup}
+              onBack={goBack}
+              onApproved={() => { enterHome(); showSnackbar(`Request approved — welcome to ${selectedGroup.name}!`); }}
+            />
+          </motion.div>
+        )}
 
         {screen === "examAttendanceMembers" && selectedExamName && (
           <motion.div
@@ -4731,9 +4951,9 @@ function PrototypeApp() {
         )}
 
 
-        {screen === "adminHome" && selectedGroup && (
+        {screen === "home" && selectedGroup && (
           <motion.div
-            key="adminHome"
+            key="home"
             custom={dir}
             variants={slideVariants}
             initial="enter"
@@ -4745,15 +4965,11 @@ function PrototypeApp() {
             <GroupMemberScreen
               group={selectedGroup}
               announcement={announcement}
-              isAdmin
-              onAdminPanel={() => goTo("adminPanel")}
-              onEditAnnouncement={() => goTo("adminAnnouncement")}
-              onViewGroupRules={() => goTo("adminGroupRulesView")}
               onBack={goBack}
               onActivityLog={() => goTo("activity")}
               onRank={() => goTo("rank")}
-              onMembers={() => { setMembersAdminMode(true); goTo("members"); }}
-              onSubgroups={() => { setSubgroupsAdminMode(true); goTo("subgroups"); }}
+              onMembers={() => goTo("members")}
+              onSubgroups={() => goTo("subgroups")}
               onTodayGoal={() => { setSelectedSubgroup(SUBGROUPS.find(s => s.isMyGroup) ?? SUBGROUPS[0]); setTodayGoalOverride(ADMIN_GOAL_OVERRIDE); goTo("todayGoal"); }}
               onMonthlyGoal={() => { setSelectedSubgroup(SUBGROUPS.find(s => s.isMyGroup) ?? SUBGROUPS[0]); setTodayGoalOverride(ADMIN_GOAL_OVERRIDE); goTo("monthlyGoal"); }}
               onDiscussion={() => goTo("discussion")}
@@ -4761,202 +4977,6 @@ function PrototypeApp() {
               onSelectExam={(examName, isLive) => { setSelectedExamName(examName); setSelectedExamLive(isLive); setSelectedExamList(MANDATORY_EXAMS); goTo("examPage"); }}
               onSelectQuickLink={(link) => { setSelectedQuickLink(link); goTo("quickLinkPage"); }}
             />
-          </motion.div>
-        )}
-
-        {screen === "adminGroupRulesView" && selectedGroup && (
-          <motion.div
-            key="adminGroupRulesView"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <AdminGroupRulesViewScreen group={selectedGroup} onBack={goBack} />
-          </motion.div>
-        )}
-
-        {screen === "adminPanel" && selectedGroup && (
-          <motion.div
-            key="adminPanel"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <AdminPanelScreen
-              group={selectedGroup}
-              onBack={goBack}
-              onMyGroup={() => goTo("adminMyGroup")}
-              onAddMember={() => setShowAddMember(true)}
-              onSelectItem={(item) => {
-                if (item.screen === "adminMembersHub" || item.screen === "subgroups" || item.screen === "adminJoiningRequests" || item.screen === "adminAnnouncement" || item.screen === "adminExamCustomisation" || item.screen === "adminGroupSettings" || item.screen === "adminGroupRules") {
-                  if (item.screen === "subgroups") setSubgroupsAdminMode(true);
-                  goTo(item.screen);
-                } else {
-                  setSelectedAdminItem(item);
-                  goTo("adminComingSoon");
-                }
-              }}
-            />
-          </motion.div>
-        )}
-
-        {screen === "adminMyGroup" && selectedGroup && (
-          <motion.div
-            key="adminMyGroup"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <AdminMyGroupScreen group={selectedGroup} onBack={goBack} />
-          </motion.div>
-        )}
-
-        {screen === "adminMembersHub" && selectedGroup && (
-          <motion.div
-            key="adminMembersHub"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <AdminMembersHubScreen
-              group={selectedGroup}
-              onBack={goBack}
-              onTotalMembers={() => { setMembersAdminMode(true); goTo("members"); }}
-              onSelectZone={(zone) => { setSelectedZone(zone); goTo("adminZoneMembers"); }}
-              onAddMember={() => setShowAddMember(true)}
-            />
-          </motion.div>
-        )}
-
-        {screen === "adminZoneMembers" && selectedGroup && selectedZone && (
-          <motion.div
-            key="adminZoneMembers"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <GroupMembersScreen group={selectedGroup} zone={selectedZone} isAdmin onBack={goBack} />
-          </motion.div>
-        )}
-
-        {screen === "adminJoiningRequests" && selectedGroup && (
-          <motion.div
-            key="adminJoiningRequests"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <AdminJoiningRequestsScreen onBack={goBack} />
-          </motion.div>
-        )}
-
-        {screen === "adminAnnouncement" && (
-          <motion.div
-            key="adminAnnouncement"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <AdminAnnouncementScreen
-              onBack={goBack}
-              onPublish={(title, description) => {
-                setAnnouncement({
-                  title,
-                  body: description,
-                  date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }),
-                });
-                goBack();
-                showSnackbar("Announcement published");
-              }}
-            />
-          </motion.div>
-        )}
-
-        {screen === "adminExamCustomisation" && (
-          <motion.div
-            key="adminExamCustomisation"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <AdminExamCustomisationScreen onBack={goBack} onSave={() => { goBack(); showSnackbar("Exam customisation saved"); }} />
-          </motion.div>
-        )}
-
-        {screen === "adminGroupSettings" && (
-          <motion.div
-            key="adminGroupSettings"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <AdminGroupSettingsScreen onBack={goBack} onSave={() => { goBack(); showSnackbar("Group settings saved"); }} />
-          </motion.div>
-        )}
-
-        {screen === "adminGroupRules" && (
-          <motion.div
-            key="adminGroupRules"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <AdminGroupRulesScreen onBack={goBack} onSave={() => { goBack(); showSnackbar("Group rules saved"); }} />
-          </motion.div>
-        )}
-
-        {screen === "adminComingSoon" && selectedAdminItem && (
-          <motion.div
-            key="adminComingSoon"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <AdminComingSoonScreen title={selectedAdminItem.label} icon={selectedAdminItem.Icon} onBack={goBack} />
           </motion.div>
         )}
 
@@ -5067,7 +5087,7 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <GroupMembersScreen group={selectedGroup} isAdmin={membersAdminMode} onBack={goBack} />
+            <GroupMembersScreen group={selectedGroup} onBack={goBack} />
           </motion.div>
         )}
 
@@ -5086,25 +5106,6 @@ function PrototypeApp() {
               group={selectedGroup}
               onBack={goBack}
               onDetail={(sg) => { setSelectedSubgroup(sg); goTo("subgroupDetail"); }}
-              onCreateNew={subgroupsAdminMode ? () => goTo("adminCreateSubgroup") : undefined}
-            />
-          </motion.div>
-        )}
-
-        {screen === "adminCreateSubgroup" && (
-          <motion.div
-            key="adminCreateSubgroup"
-            custom={dir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={slideTrans}
-            className="absolute inset-0"
-          >
-            <CreateSubgroupScreen
-              onBack={goBack}
-              onCreate={(letter, captain) => { goBack(); showSnackbar(`Subgroup ${letter} created — captain: ${captain}`); }}
             />
           </motion.div>
         )}
@@ -5122,7 +5123,6 @@ function PrototypeApp() {
           >
             <SubgroupDetailScreen
               sg={selectedSubgroup}
-              groupName={selectedGroup?.name ?? ""}
               onBack={goBack}
               onTodayGoal={() => { setTodayGoalOverride(null); goTo("todayGoal"); }}
               onMonthlyGoal={() => { setTodayGoalOverride(null); goTo("monthlyGoal"); }}
@@ -5176,7 +5176,7 @@ function PrototypeApp() {
           </motion.div>
         )}
 
-        {screen === "monthlyGoalExamDetail" && selectedExamName && selectedGroup && (
+        {screen === "monthlyGoalExamDetail" && selectedExamName && (
           <motion.div
             key="monthlyGoalExamDetail"
             custom={dir}
@@ -5187,22 +5187,13 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <MonthlyGoalExamDetailScreen examName={selectedExamName} group={selectedGroup} onBack={goBack} />
+            <MonthlyGoalExamDetailScreen examName={selectedExamName} onBack={goBack} />
           </motion.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {snackbarMessage && <Snackbar message={snackbarMessage} />}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showAddMember && (
-          <AddMemberDialog
-            onCancel={() => setShowAddMember(false)}
-            onAdd={() => { setShowAddMember(false); showSnackbar("Member added"); }}
-          />
-        )}
       </AnimatePresence>
 
       <AnimatePresence>
