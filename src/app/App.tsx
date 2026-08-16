@@ -4697,10 +4697,89 @@ function GroupCategoryFilterSheet({ value, onSelect, onClose }: { value: GroupCa
   );
 }
 
+const GROUP_LIST_GUIDELINES_TEXT = `গ্রুপে ব্যক্তিগত ও সংঘবদ্ধ কর্মকাণ্ডের কিছু নির্দেশনা দেওয়া হলো —
+
+(ক) ব্যক্তিগত কর্মকাণ্ডঃ
+
+১) কারো ভুল-ত্রুটি ধরিয়ে দেওয়ার জন্য এমন কোনো শব্দ বা বাক্য ব্যবহার করবো না যা অন্যের জন্য কষ্টদায়ক হয়। এখানে সবাই ক্যাডার হবার প্রত্যাশা নিয়ে এসেছি, তাই সকলেরই উচিত হবে ক্যাডার সুলভ আচরণ করা।
+
+২) গ্রুপে একটা মেসেজ দেওয়া মানে সকল মানুষের কাছে নোটিফিকেশন যাওয়া। তাই একটা মেসেজ দেওয়ার আগে অবশ্যই ভাববেন যে আপনার মেসেজটা কি উপকারের, আসলে নাকি বিরক্তির কারণ হলো।
+
+৩) "এক কথায় উত্তর যোগ্য" প্রশ্ন চেষ্টা করবেন অনেকগুলো জমিয়ে একেবারে মেসেজ করার জন্য। যিনি/যারা উত্তর জানবেন আপনার একটা মেসেজের রিপ্লাই হিসেবে উত্তর দিয়ে দিবেন। ধন্যবাদ, হাই, হ্যালো এসব না দিয়ে মেসেজের উপর একটা ইমোজি দিয়ে দিবেন। এতে করে সারানিতে টুং টাং মেসেজের ঝড় কিছুটা কমবে।
+
+৪) "এক কথায় উত্তর যোগ্য নয়" এমন ব্যক্তিগত প্রশ্ন প্রথমে গ্রুপে করবেন না।
+
+[নোটঃ বিষয়টি যদি অধিকাংশের জন্য প্রয়োজনীয় হয় তবে তা গ্রুপে আলোচনা করবেন, যেমন — স্টাডি প্ল্যান, আবেদন বা ফরম ফিলাপ সংক্রান্ত প্রশ্ন]`;
+
+function GroupGuidelinesBottomSheet({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="absolute inset-0 z-50 flex flex-col justify-end bg-black/40"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "tween", duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+        className="bg-white rounded-tl-[16px] rounded-tr-[16px] shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden max-h-[85%]"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Drag handle */}
+        <div className="flex flex-col items-center p-[16px] shrink-0">
+          <div className="bg-[#787878] h-[4px] rounded-[100px] w-[32px]" />
+        </div>
+
+        {/* Title */}
+        <div className="px-[16px] shrink-0">
+          <p
+            className="font-['Noto_Sans',sans-serif] font-medium text-[18px] leading-[28px] text-black"
+            style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}
+          >
+            LIVE MCQ Messenger গ্রুপের নির্দেশিকা
+          </p>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto mt-[16px]">
+          <div className="bg-white px-[16px] py-[8px]">
+            <p
+              className="font-['Noto_Sans',sans-serif] font-normal text-[14px] leading-[22px] text-black whitespace-pre-wrap"
+              style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}
+            >
+              {GROUP_LIST_GUIDELINES_TEXT}
+            </p>
+          </div>
+        </div>
+
+        {/* Close button */}
+        <div className="shrink-0 p-[12px]">
+          <button
+            onClick={onClose}
+            className="w-full h-[56px] rounded-[100px] border border-[#c7c7c7] flex items-center justify-center"
+          >
+            <span
+              className="font-['Noto_Sans',sans-serif] font-medium text-[16px] leading-[24px] tracking-[0.15px] text-[#484848]"
+              style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}
+            >
+              Close
+            </span>
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function GroupListScreen({ onBack, onSelectGroup }: { onBack: () => void; onSelectGroup: (group: Group) => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [categoryFilter, setCategoryFilter] = useState<GroupCategoryFilter>("All groups");
   const [filtering, setFiltering] = useState(false);
+  const [showGuidelines, setShowGuidelines] = useState(false);
 
   const filteredGroups = categoryFilter === "All groups" ? GROUPS : GROUPS.filter(g => g.category === categoryFilter);
 
@@ -4710,12 +4789,23 @@ function GroupListScreen({ onBack, onSelectGroup }: { onBack: () => void; onSele
         {filtering && (
           <GroupCategoryFilterSheet value={categoryFilter} onSelect={setCategoryFilter} onClose={() => setFiltering(false)} />
         )}
+        {showGuidelines && (
+          <GroupGuidelinesBottomSheet onClose={() => setShowGuidelines(false)} />
+        )}
       </AnimatePresence>
 
       <AppHeader
         title="Study group"
         onBack={onBack}
-        trailing={<AlertCircle className="size-6 text-black" strokeWidth={1.5} />}
+        trailing={
+          <button
+            onClick={() => setShowGuidelines(true)}
+            aria-label="Group guidelines"
+            className="size-9 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors"
+          >
+            <AlertCircle className="size-6 text-black" strokeWidth={1.5} />
+          </button>
+        }
       />
 
       <div className="flex-1 overflow-y-auto">
