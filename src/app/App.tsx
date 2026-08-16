@@ -5150,10 +5150,54 @@ function ConfirmJoinRequestScreen({ group, onBack, onCancel, onConfirm }: { grou
 
 // ── Screen: Join Group / Pending ──────────────────────────────────────────────
 
-function JoinGroupPendingScreen({ group, onBack }: { group: Group; onBack: () => void }) {
+// Confirmation dialog shown when the student taps the "Pending" pill on the Join
+// Group / Pending screen — mirrors LeaveGroupDialog's text-button/filled-button layout.
+function CancelJoinRequestDialog({ groupName, onCancelRequest, onKeepWaiting }: { groupName: string; onCancelRequest: () => void; onKeepWaiting: () => void }) {
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+      <motion.div
+        initial={{ scale: 0.92, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.92, opacity: 0 }}
+        transition={{ type: "tween", duration: 0.18, ease: "easeOut" }}
+        className="w-full bg-[#f4f6fa] rounded-[12px] overflow-hidden"
+      >
+        <div className="pt-[12px] px-[12px] flex flex-col gap-[16px]">
+          <p className="font-['Noto_Sans',sans-serif] font-normal text-[24px] leading-[32px] text-black" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
+            Cancel request?
+          </p>
+          <p className="font-['Noto_Sans',sans-serif] font-normal text-[14px] leading-[20px] text-[#484848]" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
+            Your request to join {groupName} will be withdrawn. You can request to join again later.
+          </p>
+        </div>
+        <div className="flex gap-[8px] items-center p-[12px]">
+          <button
+            onClick={onCancelRequest}
+            className="flex-1 h-[48px] rounded-[8px] flex items-center justify-center"
+          >
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#d40000] leading-[20px]" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
+              Cancel request
+            </span>
+          </button>
+          <button
+            onClick={onKeepWaiting}
+            className="flex-1 h-[48px] bg-[#1441cc] rounded-[8px] flex items-center justify-center"
+          >
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-white leading-[20px]" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
+              Keep waiting
+            </span>
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function JoinGroupPendingScreen({ group, onBack, onCancelRequest, onKeepWaiting }: { group: Group; onBack: () => void; onCancelRequest: () => void; onKeepWaiting: () => void }) {
   const [showAdminDetails, setShowAdminDetails] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [showExamsInfo, setShowExamsInfo] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden relative">
@@ -5168,6 +5212,13 @@ function JoinGroupPendingScreen({ group, onBack }: { group: Group; onBack: () =>
         )}
         {showRules && <GroupRulesBottomSheet onClose={() => setShowRules(false)} />}
         {showExamsInfo && <MandatoryExamsInfoBottomSheet onClose={() => setShowExamsInfo(false)} />}
+        {showCancelDialog && (
+          <CancelJoinRequestDialog
+            groupName={group.name}
+            onCancelRequest={onCancelRequest}
+            onKeepWaiting={() => { setShowCancelDialog(false); onKeepWaiting(); }}
+          />
+        )}
       </AnimatePresence>
 
       <AppHeader title="Study Group" onBack={onBack} />
@@ -5184,16 +5235,19 @@ function JoinGroupPendingScreen({ group, onBack }: { group: Group; onBack: () =>
 
         <div className="flex gap-2">
           <button
+            onClick={() => setShowCancelDialog(true)}
+            className="flex-1 h-12 bg-[#ffdad6] rounded-full flex items-center justify-center gap-2 active:opacity-80 transition-opacity"
+          >
+            <Clock className="size-5 text-[#d40000]" strokeWidth={1.75} />
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#d40000]">Pending</span>
+          </button>
+          <button
             onClick={() => setShowRules(true)}
             className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
           >
             <AlertCircle className="size-5 text-[#484848]" strokeWidth={1.5} />
             <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848]">গ্রুপের নিয়মাবলী</span>
           </button>
-          <div className="flex-1 h-12 bg-black/10 rounded-full flex items-center justify-center gap-2">
-            <Clock className="size-5 text-[#787878]" strokeWidth={1.75} />
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#787878]">Pending</span>
-          </div>
         </div>
 
         <GroupGoalGraphCard group={group} />
@@ -5266,6 +5320,23 @@ function PrototypeApp() {
     snackbarTimeoutRef.current = setTimeout(() => setSnackbarMessage(null), 2500);
   }
 
+  // "Cancel request" on the Pending screen's dialog — withdraws the request and drops
+  // the student back on that group's Join Group page so they can request again later.
+  function cancelJoinRequest() {
+    dirRef.current = -1;
+    window.history.replaceState({ depth: 0 }, "");
+    setStack(["groupList", "joinGroup"]);
+    showSnackbar("Your request has been withdrawn");
+  }
+
+  // "Keep waiting" on the same dialog — takes the student into the group now rather
+  // than leaving them stuck on the Pending screen.
+  function enterHome() {
+    dirRef.current = 1;
+    window.history.replaceState({ depth: 0 }, "");
+    setStack(["home"]);
+  }
+
   return (
     <div className="relative w-full h-full overflow-hidden">
       <AnimatePresence mode="popLayout" custom={dir}>
@@ -5331,7 +5402,12 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <JoinGroupPendingScreen group={selectedGroup} onBack={goBack} />
+            <JoinGroupPendingScreen
+              group={selectedGroup}
+              onBack={goBack}
+              onCancelRequest={cancelJoinRequest}
+              onKeepWaiting={enterHome}
+            />
           </motion.div>
         )}
 
