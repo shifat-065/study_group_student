@@ -3745,7 +3745,7 @@ function ChooseCaptainBottomSheet({ current, onCancel, onSave }: { current: stri
   );
 }
 
-function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal, onAddMember, onCaptainSaved }: { onBack: () => void; sg: SubgroupData; onTodayGoal: () => void; onMonthlyGoal: () => void; onAddMember: () => void; onCaptainSaved: (name: string) => void }) {
+function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal, onCaptainSaved }: { onBack: () => void; sg: SubgroupData; onTodayGoal: () => void; onMonthlyGoal: () => void; onCaptainSaved: (name: string) => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [sortBy, setSortBy] = useState<MemberSort>("attendance");
   const [sorting, setSorting] = useState(false);
@@ -3999,12 +3999,6 @@ function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal, onAddMem
 
         </div>
       </div>
-
-      <div className="shrink-0 p-3">
-        <button onClick={onAddMember} className="w-full h-14 bg-[#1441cc] rounded-full flex items-center justify-center active:opacity-90 transition-opacity">
-          <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-white tracking-[0.15px]">Add member</span>
-        </button>
-      </div>
     </div>
   );
 }
@@ -4147,8 +4141,6 @@ function SubgroupListScreen({ onBack, group, onDetail }: { onBack: () => void; g
   );
 }
 
-const MAX_SUBGROUP_MEMBERS = 20;
-
 interface SubgroupCandidate { name: string; pct: number; assignedTo: string | null }
 
 const CREATE_SUBGROUP_CANDIDATES: SubgroupCandidate[] = [
@@ -4161,104 +4153,6 @@ const CREATE_SUBGROUP_CANDIDATES: SubgroupCandidate[] = [
   { name: "নুসরাত জাহান", pct: 85.0, assignedTo: null },
   { name: "সাইফুল ইসলাম", pct: 85.0, assignedTo: null },
 ];
-
-// Reached from an existing Subgroup's "Add member" button — picks from the group's remaining
-// members (same pool/rules as Create Subgroup step 1: already-assigned members show their
-// subgroup letter badge and can't be selected).
-function AddSubgroupMemberSheet({ onCancel, onAdd }: { onCancel: () => void; onAdd: (names: string[]) => void }) {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-
-  function toggle(candidate: SubgroupCandidate) {
-    if (candidate.assignedTo) return;
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(candidate.name)) next.delete(candidate.name);
-      else if (next.size < MAX_SUBGROUP_MEMBERS) next.add(candidate.name);
-      return next;
-    });
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="absolute inset-0 z-50 flex flex-col justify-end bg-black/40"
-      onClick={onCancel}
-    >
-      <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "tween", duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-        className="bg-white rounded-tl-[16px] rounded-tr-[16px] shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden max-h-[85vh]"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex flex-col items-center p-4 shrink-0">
-          <div className="bg-[#787878] h-1 rounded-full w-8" />
-        </div>
-        <p className="px-4 pb-4 font-['Noto_Sans',sans-serif] font-normal text-[24px] leading-[32px] text-black">Add new member</p>
-        <div className="border-t border-[#c7c5ce]" />
-
-        <div className="flex-1 overflow-y-auto flex flex-col pt-2">
-          {CREATE_SUBGROUP_CANDIDATES.map((candidate, i) => {
-            const chip = CHIP_STYLES[pctToChip(candidate.pct)];
-            const isSelected = selected.has(candidate.name);
-            const disabled = !!candidate.assignedTo;
-            return (
-              <div key={candidate.name}>
-                <button
-                  onClick={() => toggle(candidate)}
-                  disabled={disabled}
-                  className={clsx("w-full flex items-center gap-2 px-4 py-2 text-left transition-colors", !disabled && "active:bg-gray-50")}
-                >
-                  <MemberAvatar size={30} />
-                  <span className="flex-1 min-w-0 font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-6 truncate">
-                    {candidate.name}
-                  </span>
-                  <div className="flex items-center gap-1 shrink-0">
-                    {candidate.assignedTo && <RatingBadge letter={candidate.assignedTo} />}
-                    <div className="rounded-[16px] h-6 px-3 flex items-center justify-center shrink-0" style={{ backgroundColor: chip.bg }}>
-                      <span className="font-['Noto_Sans',sans-serif] text-[12px] font-medium" style={{ color: chip.text }}>
-                        {candidate.pct.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div
-                      className={clsx(
-                        "size-[18px] rounded-[2px] shrink-0 flex items-center justify-center",
-                        disabled ? "opacity-38 border-2 border-black" : isSelected ? "bg-[#1441cc]" : "border-2 border-[#787878]",
-                      )}
-                    >
-                      {isSelected && !disabled && <Check className="size-3.5 text-white" strokeWidth={3} />}
-                    </div>
-                  </div>
-                </button>
-                {i < CREATE_SUBGROUP_CANDIDATES.length - 1 && <div className="mx-4 border-t border-[#C7C5CE]" />}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="shrink-0 flex items-center gap-3 p-3">
-          <button onClick={onCancel} className="flex-1 h-12 rounded-full border border-[#787878] flex items-center justify-center active:bg-gray-50 transition-colors">
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-[#484848]">Cancel</span>
-          </button>
-          <button
-            onClick={() => onAdd(Array.from(selected))}
-            disabled={selected.size === 0}
-            className={clsx(
-              "flex-1 h-12 rounded-full flex items-center justify-center transition-opacity",
-              selected.size > 0 ? "bg-[#1441cc] active:opacity-90" : "bg-[#1441cc] opacity-40 cursor-not-allowed",
-            )}
-          >
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-white">Add</span>
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
 
 function AttendanceSortBottomSheet({ desc, onSelect, onClose }: { desc: boolean; onSelect: (desc: boolean) => void; onClose: () => void }) {
   const options = [{ id: true, label: "High to low" }, { id: false, label: "Low to high" }];
@@ -5268,7 +5162,6 @@ function PrototypeApp() {
   const [selectedExamList, setSelectedExamList] = useState<Array<{ name: string; isLive: boolean }>>(MANDATORY_EXAMS);
   const [todayGoalOverride, setTodayGoalOverride] = useState<GoalDetailOverride | null>(null);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
-  const [showAddSubgroupMember, setShowAddSubgroupMember] = useState(false);
   const snackbarTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dirRef = useRef<1 | -1>(1);
 
@@ -5626,7 +5519,6 @@ function PrototypeApp() {
               onBack={goBack}
               onTodayGoal={() => { setTodayGoalOverride(null); goTo("todayGoal"); }}
               onMonthlyGoal={() => { setTodayGoalOverride(null); goTo("monthlyGoal"); }}
-              onAddMember={() => setShowAddSubgroupMember(true)}
               onCaptainSaved={(name) => { setSelectedSubgroup(prev => prev ? { ...prev, captain: name } : prev); showSnackbar("Captain updated"); }}
             />
           </motion.div>
@@ -5694,15 +5586,6 @@ function PrototypeApp() {
 
       <AnimatePresence>
         {snackbarMessage && <Snackbar message={snackbarMessage} />}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showAddSubgroupMember && (
-          <AddSubgroupMemberSheet
-            onCancel={() => setShowAddSubgroupMember(false)}
-            onAdd={() => { setShowAddSubgroupMember(false); showSnackbar("Member added"); }}
-          />
-        )}
       </AnimatePresence>
     </div>
   );
