@@ -5150,17 +5150,10 @@ function ConfirmJoinRequestScreen({ group, onBack, onCancel, onConfirm }: { grou
 
 // ── Screen: Join Group / Pending ──────────────────────────────────────────────
 
-function JoinGroupPendingScreen({ group, onBack, onApproved }: { group: Group; onBack: () => void; onApproved: () => void }) {
+function JoinGroupPendingScreen({ group, onBack }: { group: Group; onBack: () => void }) {
   const [showAdminDetails, setShowAdminDetails] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [showExamsInfo, setShowExamsInfo] = useState(false);
-
-  // Demo-only stand-in for the admin actually reviewing the request — auto-advances
-  // into the group after a short wait so the rest of the prototype stays reachable.
-  useEffect(() => {
-    const timeout = setTimeout(onApproved, 1800);
-    return () => clearTimeout(timeout);
-  }, [onApproved]);
 
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden relative">
@@ -5267,14 +5260,6 @@ function PrototypeApp() {
     window.history.back();
   }
 
-  // Replaces the whole stack/history — used once, when the join request is approved and
-  // the student lands on the group home screen for the rest of the session.
-  function enterHome() {
-    dirRef.current = 1;
-    window.history.replaceState({ depth: 0 }, "");
-    setStack(["home"]);
-  }
-
   function showSnackbar(message: string) {
     if (snackbarTimeoutRef.current) clearTimeout(snackbarTimeoutRef.current);
     setSnackbarMessage(message);
@@ -5346,11 +5331,7 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <JoinGroupPendingScreen
-              group={selectedGroup}
-              onBack={goBack}
-              onApproved={() => { enterHome(); showSnackbar(`Request approved — welcome to ${selectedGroup.name}!`); }}
-            />
+            <JoinGroupPendingScreen group={selectedGroup} onBack={goBack} />
           </motion.div>
         )}
 
