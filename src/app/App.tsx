@@ -1556,6 +1556,7 @@ function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, on
       <AnimatePresence>
         {showSettings && (
           <GroupSettingsSheet
+            key="settings"
             onClose={() => setShowSettings(false)}
             onGroupRules={() => { setShowSettings(false); onViewGroupRules(); }}
             onReportIssue={() => setShowReport(true)}
@@ -1563,19 +1564,21 @@ function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, on
           />
         )}
         {showReport && (
-          <ReportIssueDialog onClose={() => setShowReport(false)} />
+          <ReportIssueDialog key="report" onClose={() => setShowReport(false)} />
         )}
         {showLeaveConfirm && (
           <LeaveGroupDialog
+            key="leave"
             onLeave={onBack}
             onStay={() => setShowLeaveConfirm(false)}
           />
         )}
         {showExamsInfo && (
-          <MandatoryExamsInfoBottomSheet onClose={() => setShowExamsInfo(false)} />
+          <MandatoryExamsInfoBottomSheet key="examsInfo" onClose={() => setShowExamsInfo(false)} />
         )}
         {showAdminDetails && (
           <AdminDetailsBottomSheet
+            key="adminDetails"
             name={group.admin}
             rating={group.adminRating}
             since={group.createdDate}
