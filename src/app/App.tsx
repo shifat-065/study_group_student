@@ -137,7 +137,7 @@ function AppHeader({ title, onBack, trailing }: { title: string; onBack: () => v
       >
         <ArrowLeft className="size-6 text-[#484848]" strokeWidth={2} />
       </button>
-      <p className="absolute left-14 right-28 font-['Noto_Sans',sans-serif] text-[18px] font-medium text-black leading-7 truncate">
+      <p className={clsx("absolute left-14 font-['Noto_Sans',sans-serif] text-[18px] font-medium text-black leading-7 truncate", trailing ? "right-28" : "right-14")}>
         {title}
       </p>
       <div className="flex items-center justify-end pr-3 min-w-12 h-12 shrink-0">
