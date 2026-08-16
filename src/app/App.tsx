@@ -500,18 +500,6 @@ function ExamQuickLinks({ onSelect }: { onSelect: (link: QuickLink) => void }) {
   );
 }
 
-// Rows shown on the Admin panel hub. Destinations without a real screen yet fall back to
-// AdminComingSoonScreen so every row stays tappable instead of dead-ending silently.
-const ADMIN_PANEL_ITEMS: Array<{ id: string; label: string; Icon: LucideIcon; screen: "adminMembersHub" | "subgroups" | "adminJoiningRequests" | "adminAnnouncement" | "adminExamCustomisation" | "adminGroupSettings" | "adminGroupRules" | "adminComingSoon" }> = [
-  { id: "joining", label: "Joining requested", Icon: UserPlus, screen: "adminJoiningRequests" },
-  { id: "announcements", label: "Announcements", Icon: Megaphone, screen: "adminAnnouncement" },
-  { id: "members", label: "Members", Icon: Users, screen: "adminMembersHub" },
-  { id: "subgroups", label: "Subgroups", Icon: Layers, screen: "subgroups" },
-  { id: "examCustomisation", label: "Exam Customisation", Icon: FileText, screen: "adminExamCustomisation" },
-  { id: "groupSettings", label: "Group Settings", Icon: Settings, screen: "adminGroupSettings" },
-  { id: "groupRules", label: "Edit Group Rules", Icon: Gavel, screen: "adminGroupRules" },
-];
-
 interface ResultExamItem {
   id: string;
   title: string;
@@ -975,28 +963,6 @@ function QuickLinkPageScreen({ link, onBack }: { link: QuickLink; onBack: () => 
   );
 }
 
-// Placeholder screen for Admin panel destinations that don't have a built-out screen yet.
-function AdminComingSoonScreen({ title, icon: Icon, onBack }: { title: string; icon: LucideIcon; onBack: () => void }) {
-  return (
-    <div className="flex flex-col h-full bg-white overflow-hidden">
-      <AppHeader title={title} onBack={onBack} />
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 px-8 -mt-12">
-        <div className="size-16 rounded-full bg-[#f4f6fa] flex items-center justify-center">
-          <Icon className="size-7 text-[#787878]" strokeWidth={1.5} />
-        </div>
-        <div className="flex flex-col gap-1 items-center">
-          <p className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px] text-center" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
-            Coming soon
-          </p>
-          <p className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#787878] leading-[20px] text-center" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
-            This admin tool is still being built.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ArticleIcon() {
   return (
     <svg className="size-4 shrink-0" fill="none" viewBox="0 0 16 16">
@@ -1442,132 +1408,6 @@ function ReportIssueDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
-// Header kebab menu for the admin's own Study Group screen — swaps "Report issue" for
-// "Admin panel" compared to the member's GroupSettingsSheet, and skips straight there.
-function AdminGroupSettingsSheet({
-  onClose,
-  onAdminPanel,
-  onGroupRules,
-}: {
-  onClose: () => void;
-  onAdminPanel: () => void;
-  onGroupRules: () => void;
-}) {
-  const [notifOn, setNotifOn] = useState(true);
-  const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="absolute inset-0 z-50 flex flex-col justify-end bg-black/40"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "tween", duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-        className="bg-white rounded-tl-[16px] rounded-tr-[16px] shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pb-4"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex flex-col items-center p-4 shrink-0">
-          <div className="bg-[#787878] h-1 rounded-full w-8" />
-        </div>
-
-        <div className="px-4 shrink-0">
-          <p className="font-['Noto_Sans',sans-serif] font-normal text-[18px] leading-[28px] text-black" style={ns}>Group Settings</p>
-        </div>
-
-        <div className="flex flex-col gap-4 mt-6">
-          <div className="flex flex-col w-full">
-            <button
-              onClick={() => { onClose(); setTimeout(onAdminPanel, 50); }}
-              className="bg-white h-14 min-h-[56px] w-full flex items-center px-4 gap-4 active:bg-gray-50 transition-colors"
-            >
-              <Shield className="size-6 text-black shrink-0" strokeWidth={1.5} />
-              <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-6" style={ns}>Admin panel</span>
-            </button>
-            <button
-              onClick={() => { onClose(); setTimeout(onGroupRules, 50); }}
-              className="bg-white h-14 min-h-[56px] w-full flex items-center px-4 gap-4 active:bg-gray-50 transition-colors"
-            >
-              <Gavel className="size-6 text-black shrink-0" strokeWidth={1.5} />
-              <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-6" style={ns}>Group rules</span>
-            </button>
-          </div>
-
-          <div className="px-4"><div className="h-px bg-[#C7C5CE]" /></div>
-
-          <div className="bg-white h-14 min-h-[56px] w-full flex items-center px-4 gap-4">
-            <Bell className="size-6 text-[#484848] shrink-0" strokeWidth={1.5} />
-            <span className="flex-1 font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-6" style={ns}>Group notification</span>
-            <button
-              onClick={() => setNotifOn(v => !v)}
-              className={clsx("relative h-8 w-[52px] rounded-full transition-colors duration-200 shrink-0", notifOn ? "bg-[#1441cc]" : "bg-[#787878]")}
-            >
-              <motion.div
-                className="absolute top-[2px] bg-white rounded-full size-7 shadow-sm"
-                animate={{ left: notifOn ? "22px" : "2px" }}
-                transition={{ type: "tween", duration: 0.18 }}
-              />
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-// Kebab menu on the announcement banner itself — Edit routes to the real announcement
-// composer; Share/Delete are single-announcement demo actions with no list to affect.
-function AnnouncementActionsSheet({ onClose, onEdit }: { onClose: () => void; onEdit: () => void }) {
-  const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="absolute inset-0 z-50 flex flex-col justify-end bg-black/40"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "tween", duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-        className="bg-white rounded-tl-[16px] rounded-tr-[16px] shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pb-4"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex flex-col items-center p-4 shrink-0">
-          <div className="bg-[#787878] h-1 rounded-full w-8" />
-        </div>
-        <div className="flex flex-col">
-          <button
-            onClick={() => { onClose(); setTimeout(onEdit, 50); }}
-            className="h-14 flex items-center gap-4 px-4 active:bg-gray-50 transition-colors text-left"
-          >
-            <Pencil className="size-6 text-black shrink-0" strokeWidth={1.5} />
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-6" style={ns}>Edit</span>
-          </button>
-          <button onClick={onClose} className="h-14 flex items-center gap-4 px-4 active:bg-gray-50 transition-colors text-left">
-            <Share2 className="size-6 text-black shrink-0" strokeWidth={1.5} />
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-6" style={ns}>Share</span>
-          </button>
-          <div className="px-4"><div className="h-px bg-[#C7C5CE]" /></div>
-          <button onClick={onClose} className="h-14 flex items-center gap-4 px-4 active:bg-gray-50 transition-colors text-left">
-            <Trash2 className="size-6 text-[#d40000] shrink-0" strokeWidth={1.5} />
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-[#d40000] leading-6" style={ns}>Delete</span>
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
 function GroupSettingsSheet({
   onClose,
   onGroupRules,
@@ -1707,38 +1547,23 @@ function GroupSettingsSheet({
   );
 }
 
-function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, onSubgroups, onTodayGoal, onMonthlyGoal, onDiscussion, onFacebookGroup, onSelectExam, onSelectQuickLink, isAdmin, onAdminPanel, onEditAnnouncement, onViewGroupRules, announcement }: { group: Group; onBack: () => void; onActivityLog: () => void; onRank: () => void; onMembers: () => void; onSubgroups: () => void; onTodayGoal: () => void; onMonthlyGoal: () => void; onDiscussion: () => void; onFacebookGroup: () => void; onSelectExam: (examName: string, isLive: boolean) => void; onSelectQuickLink: (link: QuickLink) => void; isAdmin?: boolean; onAdminPanel?: () => void; onEditAnnouncement?: () => void; onViewGroupRules?: () => void; announcement: { title: string; body: string; date: string } }) {
+function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, onSubgroups, onTodayGoal, onMonthlyGoal, onDiscussion, onFacebookGroup, onSelectExam, onSelectQuickLink, announcement }: { group: Group; onBack: () => void; onActivityLog: () => void; onRank: () => void; onMembers: () => void; onSubgroups: () => void; onTodayGoal: () => void; onMonthlyGoal: () => void; onDiscussion: () => void; onFacebookGroup: () => void; onSelectExam: (examName: string, isLive: boolean) => void; onSelectQuickLink: (link: QuickLink) => void; announcement: { title: string; body: string; date: string } }) {
   const [showSettings, setShowSettings] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showExamsInfo, setShowExamsInfo] = useState(false);
   const [showAdminDetails, setShowAdminDetails] = useState(false);
-  const [showAnnouncementActions, setShowAnnouncementActions] = useState(false);
 
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden relative">
       <AnimatePresence>
         {showSettings && (
-          isAdmin ? (
-            <AdminGroupSettingsSheet
-              onClose={() => setShowSettings(false)}
-              onAdminPanel={() => onAdminPanel?.()}
-              onGroupRules={() => onViewGroupRules?.()}
-            />
-          ) : (
-            <GroupSettingsSheet
-              onClose={() => setShowSettings(false)}
-              onGroupRules={() => setShowRules(true)}
-              onReportIssue={() => setShowReport(true)}
-              onLeaveGroup={() => setShowLeaveConfirm(true)}
-            />
-          )
-        )}
-        {showAnnouncementActions && (
-          <AnnouncementActionsSheet
-            onClose={() => setShowAnnouncementActions(false)}
-            onEdit={() => onEditAnnouncement?.()}
+          <GroupSettingsSheet
+            onClose={() => setShowSettings(false)}
+            onGroupRules={() => setShowRules(true)}
+            onReportIssue={() => setShowReport(true)}
+            onLeaveGroup={() => setShowLeaveConfirm(true)}
           />
         )}
         {showRules && (
@@ -1805,22 +1630,6 @@ function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, on
             <span className="flex-1 font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px]" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
               {announcement.title}
             </span>
-            {isAdmin && (
-              <button
-                onClick={() => setShowAnnouncementActions(true)}
-                aria-label="Announcement actions"
-                className="size-6 flex items-center justify-center shrink-0 active:opacity-70 transition-opacity"
-              >
-                <svg className="size-6" fill="none" viewBox="0 0 24 24">
-                  <mask id="m-more-announcement" maskUnits="userSpaceOnUse" style={{ maskType: "alpha" }} width="24" height="24">
-                    <rect fill="#D9D9D9" width="24" height="24" />
-                  </mask>
-                  <g mask="url(#m-more-announcement)">
-                    <path d={svgMember.p2a1bd980} fill="black" />
-                  </g>
-                </svg>
-              </button>
-            )}
           </div>
           <p className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-black leading-[20px]" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
             {announcement.body}
