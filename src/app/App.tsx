@@ -29,7 +29,7 @@ import goalSvgPaths from "@/imports/MobileStudyGroupStudentSubgroupTodysGoal-1/s
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Screen = "groupList" | "joinGroup" | "confirmJoinRequest" | "joinGroupPending" | "home" | "activity" | "rank" | "members" | "subgroups" | "subgroupDetail" | "todayGoal" | "monthlyGoal" | "examAttendanceMembers" | "monthlyGoalExamDetail" | "discussion" | "facebookGroup" | "examPage" | "quickLinkPage";
+type Screen = "groupList" | "joinGroup" | "confirmJoinRequest" | "joinGroupPending" | "home" | "groupRules" | "activity" | "rank" | "members" | "subgroups" | "subgroupDetail" | "todayGoal" | "monthlyGoal" | "examAttendanceMembers" | "monthlyGoalExamDetail" | "discussion" | "facebookGroup" | "examPage" | "quickLinkPage";
 
 interface Group {
   id: number;
@@ -361,85 +361,82 @@ function AdminDetailsBottomSheet({
   );
 }
 
-const RULES_TEXT = `মেসেঞ্জার গ্রুপ একটিভের জন্য কার্যাবলি
+const GROUP_RULES_BODY_TEXT = `- নিয়মিত পরীক্ষা দিতে হবে। প্রতিযোগিতার মাধ্যমে নিজেকে পুশ করুন। হতাশ হবেন না। পাশ ফেল নিয়ে অতিরিক্ত না ভেবে পড়াশুনা করে লাইভ পরীক্ষা দিন। মূল পরীক্ষায় এটা আপনাকে অনেক সাহায্য করবে।
 
-★★LIVE MCQ Messenger গ্রুপের নির্দেশিকা★★
+- নিয়মিত লাইভ পরীক্ষায় অংশগ্রহণ না করলে গ্রুপের মেম্বারশিপ বাতিল করে দেয়া হবে।
+সেক্ষেত্রে পূর্ববর্তী ১৫ দিনের পরীক্ষাসমূহে আপনার উপস্থিতিঃ
+ক) ৫০% এর নিচে হলে "সতর্কতামূলক মেসেজ" দেখাবে।
+খ) ৩০% এর নিচে হলে গ্রুপ এডমিন আপনাকে গ্রুপ থেকে রিমুভ করে দিবেন।
 
- গ্রুপে ব্যক্তিগত ও সমষ্টিগত কর্মকাণ্ডের কিছু নির্দেশনা দেওয়া হলো।
+- একান্ত ব্যক্তিগত আলোচনা নিষিদ্ধ। তবে, নিজেদের মধ্যে আড্ডা-গল্প হতেই পারে।
+- কোন ধরনের বিজ্ঞাপনমূলক পোস্ট কিংবা অযাচিত লিংক শেয়ার করা যাবে না।
+- অপর সদস্যদের মতামতকে সম্মান দিয়ে আলোচনা করতে হবে।
+- এডমিন সম্পর্কে কোন অভিযোগ থাকলে সরাসরি Live MCQ পেজে মেসেজ দিয়ে জানাতে পারবেন। সেক্ষেত্রে, আমরা এডমিনের সাথে কথা বলব।
 
-(ক) ব্যক্তিগত কর্মকাণ্ডঃ
+আশা করি Live MCQ অফিসিয়াল স্টাডি গ্রুপগুলো আপনাদের প্রস্তুতিতে যথেষ্ট সহায়তা করবে।
+পাশাপাশি, পারস্পরিক সম্মান ও সহযোগিতার মনোভাব নিয়ে গ্রুপে একটি প্রাণবন্ত পরিবেশ বজায় রাখবেন এই কামনা করছি।
 
-১) কারো ভুল-ভ্রান্তি শোধরানোর জন্য এমন কোন শব্দ বা বাক্য ব্যবহার করবো না যা অন্যের জন্য কষ্টদায়ক হয়। এখানে সবাই ক্যাডার হবার প্রত্যাশা নিয়ে এসেছি তাই সকলেরই উচিৎ হবে ক্যাডার সূলভ আচরণ করা।
+শুভকামনায়,
+Live MCQ Team.`;
 
-২) গ্রুপে একটা মেসেজ দেওয়া মানে সকল মানুষের কাছে নোটিফিকেশন যাওয়া। তাই একটা মেসেজ দেওয়ার আগে অবশ্যই ভাববেন যে আপনার মেসেজটা কি উপকারে আসলো নাকি বিরক্তির কারণ হলো।
+function GroupRulesScreen({ group, onBack }: { group: Group; onBack: () => void }) {
+  const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
+  const zoneRows = [
+    { color: "#ff3232", label: "Red Zone Attendance", value: "10%" },
+    { color: "#e4b400", label: "Yellow Zone Attendance", value: "20%" },
+    { color: "#2f9e44", label: "Green Zone Attendance", value: "70%" },
+  ];
 
-৩) "এক কথায় উত্তর যোগ্য" প্রশ্ন চেষ্টা করবেন অনেকগুলো জমিয়ে একত্রে একটা মেসেজে করার জন্য। যিনি/যারা উত্তর জানবেন আপনার একটা মেসেজের রিপ্লাইতেই উত্তর গুলো দিয়ে দিবেন। ধন্যবাদ, হাই, হ্যালো এসব না দিয়ে মেসেজের উপর একটা ইমোজি দিয়ে দিবেন। এতে করে সারাদিন টুং টাং মেসেজের ঝড় কিছুটা কমবে।
-
-৪) "এক কথায় উত্তর যোগ্য নয়" এমন ব্যক্তিগত প্রশ্ন প্রথমে গ্রুপে করবেন।
-[নোটঃ বিষয়টি যদি অধিকাংশের জন্য প্রয়োজনীয় হয় তবে তা গ্রুপেই আলোচনা করবেন যেমন- স্টাডি প্ল্যান, আবেদন বা ফর্মফিলাপ সংক্রান্ত প্রশ্ন।]
-
-৫) নতুনরা গ্রুপে এসেই মেসেজিং শুরু করবেন না। একটু সময় নিয়ে অবজার্ভ করুণ, ধীরে ধীরে এনগেজড হোন।`;
-function GroupRulesBottomSheet({ onClose }: { onClose: () => void }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="absolute inset-0 z-50 flex flex-col justify-end bg-black/40"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "tween", duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-        className="bg-white rounded-tl-[16px] rounded-tr-[16px] shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden max-h-[85vh]"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Drag handle */}
-        <div className="flex flex-col items-center p-[16px] shrink-0">
-          <div className="bg-[#787878] h-[4px] rounded-[100px] w-[32px]" />
-        </div>
+    <div className="flex flex-col h-full bg-white overflow-hidden">
+      <AppHeader title="Group rules" onBack={onBack} />
 
-        {/* Title */}
-        <div className="px-[16px] pb-[16px] shrink-0">
-          <p
-            className="font-['Noto_Sans',sans-serif] font-normal text-[18px] leading-[28px] text-black"
-            style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}
-          >
-            গ্রুপের নিয়মাবলী
-          </p>
-        </div>
-
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto mt-[24px]">
-          <div className="bg-white px-[16px] py-[8px]">
-            <p
-              className="font-['Noto_Sans',sans-serif] font-normal text-[14px] leading-[20px] text-[#484848] whitespace-pre-wrap"
-              style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}
-            >
-              {RULES_TEXT}
-            </p>
+      <div className="flex-1 overflow-y-auto flex flex-col gap-4 px-4 pt-4 pb-6">
+        <div className="border border-[#e3e3e3] rounded-[12px] p-3 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5" style={ns}>Status</span>
+            <div className="bg-[#0c5fff] rounded-[4px] px-2 h-5 flex items-center shrink-0">
+              <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-white leading-4" style={ns}>Open to Join</span>
+            </div>
+          </div>
+          <div className="h-px bg-[#e3e3e3]" />
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848] leading-5" style={ns}>Member Limit</span>
+              <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5">{group.maxMembers}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848] leading-5" style={ns}>Subgroup Member Limit</span>
+              <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5">20</span>
+            </div>
           </div>
         </div>
 
-        {/* Close button */}
-        <div className="shrink-0 p-[12px]">
-          <button
-            onClick={onClose}
-            className="w-full h-[56px] rounded-[100px] border border-[#c7c7c7] flex items-center justify-center"
-          >
-            <span
-              className="font-['Noto_Sans',sans-serif] font-medium text-[16px] leading-[24px] tracking-[0.15px] text-[#484848]"
-              style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}
-            >
-              Close
-            </span>
-          </button>
+        <div className="border border-[#e3e3e3] rounded-[12px] p-3 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5" style={ns}>Monthly Goal</span>
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5">{group.monthlyGoal}</span>
+          </div>
+          <div className="h-px bg-[#e3e3e3]" />
+          <div className="flex flex-col gap-4">
+            {zoneRows.map(row => (
+              <div key={row.label} className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  <div className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: row.color }} />
+                  <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848] leading-5" style={ns}>{row.label}</span>
+                </div>
+                <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5">{row.value}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </motion.div>
-    </motion.div>
+
+        <div className="flex flex-col">
+          <p className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5 mb-2" style={ns}>গ্রুপের সাধারণ নিয়মাবলীঃ</p>
+          <p className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#484848] leading-5 whitespace-pre-wrap" style={ns}>{GROUP_RULES_BODY_TEXT}</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1547,9 +1544,8 @@ function GroupSettingsSheet({
   );
 }
 
-function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, onSubgroups, onTodayGoal, onMonthlyGoal, onDiscussion, onFacebookGroup, onSelectExam, onSelectQuickLink, announcement }: { group: Group; onBack: () => void; onActivityLog: () => void; onRank: () => void; onMembers: () => void; onSubgroups: () => void; onTodayGoal: () => void; onMonthlyGoal: () => void; onDiscussion: () => void; onFacebookGroup: () => void; onSelectExam: (examName: string, isLive: boolean) => void; onSelectQuickLink: (link: QuickLink) => void; announcement: { title: string; body: string; date: string } }) {
+function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, onSubgroups, onTodayGoal, onMonthlyGoal, onDiscussion, onFacebookGroup, onSelectExam, onSelectQuickLink, onViewGroupRules, announcement }: { group: Group; onBack: () => void; onActivityLog: () => void; onRank: () => void; onMembers: () => void; onSubgroups: () => void; onTodayGoal: () => void; onMonthlyGoal: () => void; onDiscussion: () => void; onFacebookGroup: () => void; onSelectExam: (examName: string, isLive: boolean) => void; onSelectQuickLink: (link: QuickLink) => void; onViewGroupRules: () => void; announcement: { title: string; body: string; date: string } }) {
   const [showSettings, setShowSettings] = useState(false);
-  const [showRules, setShowRules] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showExamsInfo, setShowExamsInfo] = useState(false);
@@ -1561,13 +1557,10 @@ function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, on
         {showSettings && (
           <GroupSettingsSheet
             onClose={() => setShowSettings(false)}
-            onGroupRules={() => setShowRules(true)}
+            onGroupRules={() => { setShowSettings(false); onViewGroupRules(); }}
             onReportIssue={() => setShowReport(true)}
             onLeaveGroup={() => setShowLeaveConfirm(true)}
           />
-        )}
-        {showRules && (
-          <GroupRulesBottomSheet onClose={() => setShowRules(false)} />
         )}
         {showReport && (
           <ReportIssueDialog onClose={() => setShowReport(false)} />
@@ -5027,9 +5020,8 @@ function GroupMandatoryExamsPreview({ onShowInfo }: { onShowInfo: () => void }) 
   );
 }
 
-function JoinGroupScreen({ group, onBack, onJoin }: { group: Group; onBack: () => void; onJoin: () => void }) {
+function JoinGroupScreen({ group, onBack, onViewRules, onJoin }: { group: Group; onBack: () => void; onViewRules: () => void; onJoin: () => void }) {
   const [showAdminDetails, setShowAdminDetails] = useState(false);
-  const [showRules, setShowRules] = useState(false);
   const [showExamsInfo, setShowExamsInfo] = useState(false);
 
   return (
@@ -5043,7 +5035,6 @@ function JoinGroupScreen({ group, onBack, onJoin }: { group: Group; onBack: () =
             onClose={() => setShowAdminDetails(false)}
           />
         )}
-        {showRules && <GroupRulesBottomSheet onClose={() => setShowRules(false)} />}
         {showExamsInfo && <MandatoryExamsInfoBottomSheet onClose={() => setShowExamsInfo(false)} />}
       </AnimatePresence>
 
@@ -5054,7 +5045,7 @@ function JoinGroupScreen({ group, onBack, onJoin }: { group: Group; onBack: () =
 
         <div className="flex gap-2">
           <button
-            onClick={() => setShowRules(true)}
+            onClick={onViewRules}
             className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
           >
             <AlertCircle className="size-5 text-[#484848]" strokeWidth={1.5} />
@@ -5193,9 +5184,8 @@ function CancelJoinRequestDialog({ groupName, onCancelRequest, onKeepWaiting }: 
   );
 }
 
-function JoinGroupPendingScreen({ group, onBack, onCancelRequest, onKeepWaiting }: { group: Group; onBack: () => void; onCancelRequest: () => void; onKeepWaiting: () => void }) {
+function JoinGroupPendingScreen({ group, onBack, onViewRules, onCancelRequest, onKeepWaiting }: { group: Group; onBack: () => void; onViewRules: () => void; onCancelRequest: () => void; onKeepWaiting: () => void }) {
   const [showAdminDetails, setShowAdminDetails] = useState(false);
-  const [showRules, setShowRules] = useState(false);
   const [showExamsInfo, setShowExamsInfo] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
@@ -5210,7 +5200,6 @@ function JoinGroupPendingScreen({ group, onBack, onCancelRequest, onKeepWaiting 
             onClose={() => setShowAdminDetails(false)}
           />
         )}
-        {showRules && <GroupRulesBottomSheet onClose={() => setShowRules(false)} />}
         {showExamsInfo && <MandatoryExamsInfoBottomSheet onClose={() => setShowExamsInfo(false)} />}
         {showCancelDialog && (
           <CancelJoinRequestDialog
@@ -5242,7 +5231,7 @@ function JoinGroupPendingScreen({ group, onBack, onCancelRequest, onKeepWaiting 
             <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#d40000]">Pending</span>
           </button>
           <button
-            onClick={() => setShowRules(true)}
+            onClick={onViewRules}
             className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
           >
             <AlertCircle className="size-5 text-[#484848]" strokeWidth={1.5} />
@@ -5367,7 +5356,12 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <JoinGroupScreen group={selectedGroup} onBack={goBack} onJoin={() => goTo("confirmJoinRequest")} />
+            <JoinGroupScreen
+              group={selectedGroup}
+              onBack={goBack}
+              onViewRules={() => goTo("groupRules")}
+              onJoin={() => goTo("confirmJoinRequest")}
+            />
           </motion.div>
         )}
 
@@ -5405,6 +5399,7 @@ function PrototypeApp() {
             <JoinGroupPendingScreen
               group={selectedGroup}
               onBack={goBack}
+              onViewRules={() => goTo("groupRules")}
               onCancelRequest={cancelJoinRequest}
               onKeepWaiting={enterHome}
             />
@@ -5452,7 +5447,23 @@ function PrototypeApp() {
               onFacebookGroup={() => goTo("facebookGroup")}
               onSelectExam={(examName, isLive) => { setSelectedExamName(examName); setSelectedExamLive(isLive); setSelectedExamList(MANDATORY_EXAMS); goTo("examPage"); }}
               onSelectQuickLink={(link) => { setSelectedQuickLink(link); goTo("quickLinkPage"); }}
+              onViewGroupRules={() => goTo("groupRules")}
             />
+          </motion.div>
+        )}
+
+        {screen === "groupRules" && selectedGroup && (
+          <motion.div
+            key="groupRules"
+            custom={dir}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={slideTrans}
+            className="absolute inset-0"
+          >
+            <GroupRulesScreen group={selectedGroup} onBack={goBack} />
           </motion.div>
         )}
 
