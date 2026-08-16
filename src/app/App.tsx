@@ -3113,142 +3113,15 @@ function SubgroupSortBottomSheet({ value, onSelect, onClose }: { value: Subgroup
   );
 }
 
-// ── Screen: Admin / Members hub ─────────────────────────────────────────────────
-
-const MEMBERS_ATTENDANCE_BARS = [
-  { month: "Jan", pct: 20 }, { month: "Feb", pct: 42 }, { month: "Mar", pct: 17 },
-  { month: "Apr", pct: 36 }, { month: "May", pct: 25 }, { month: "Jun", pct: 42 },
-  { month: "Jul", pct: 49 }, { month: "Aug", pct: 36 }, { month: "Sep", pct: 31 },
-  { month: "Oct", pct: 74 }, { month: "Nov", pct: 56 }, { month: "Dec", pct: 36 },
-];
-
 function zoneBarColor(pct: number) {
   return pct >= 76 ? "#6fcf7e" : pct >= 41 ? "#ffcb61" : "#f04d30";
 }
-
-function AdminMembersHubScreen({ group, onBack, onTotalMembers, onSelectZone, onAddMember }: { group: Group; onBack: () => void; onTotalMembers: () => void; onSelectZone: (zone: Zone) => void; onAddMember: () => void }) {
-  const zoneCounts = (Object.keys(ZONES) as Zone[]).reduce((acc, zone) => {
-    acc[zone] = MEMBER_LIST.filter(m => ZONES[zone].match(m.pct)).length;
-    return acc;
-  }, {} as Record<Zone, number>);
-
-  return (
-    <div className="flex flex-col h-full bg-white overflow-hidden relative">
-      <AppHeader title="Members" onBack={onBack} />
-
-      <div className="flex-1 overflow-y-auto flex flex-col gap-4 pt-2">
-        {/* Attendance graph */}
-        <div className="px-4">
-          <div className="bg-[#f4f6fa] rounded-[16px] py-3 flex flex-col gap-4">
-            <button onClick={onTotalMembers} className="flex items-center justify-between px-3 active:opacity-70 transition-opacity">
-              <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5">Total members</span>
-              <div className="flex items-center gap-1">
-                <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5">{group.members}</span>
-                <ChevronRight className="size-6 text-[#484848]" strokeWidth={1.5} />
-              </div>
-            </button>
-            <div className="border-t border-[#e3e3e3] mx-3" />
-            <div className="px-3 flex flex-col gap-2">
-              <div className="grid grid-cols-12 gap-1 h-[100px] items-end">
-                {MEMBERS_ATTENDANCE_BARS.map(bar => (
-                  <div key={bar.month} className="rounded-t-sm" style={{ height: `${bar.pct}px`, backgroundColor: zoneBarColor(bar.pct) }} />
-                ))}
-              </div>
-              <div className="grid grid-cols-12 text-right">
-                {MEMBERS_ATTENDANCE_BARS.map(bar => (
-                  <span key={bar.month} className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#8f8d8d] leading-4">{bar.month}</span>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center justify-between px-3">
-              {[{ c: "#f04d30", l: "0 - 40%" }, { c: "#ffcb61", l: "41 - 75%" }, { c: "#6fcf7e", l: "76 - 100%" }].map(({ c, l }) => (
-                <div key={l} className="flex items-center gap-1 p-1">
-                  <div className="size-2.5 rounded-[4px] shrink-0" style={{ backgroundColor: c }} />
-                  <span className="font-['Noto_Sans',sans-serif] text-[12px] text-[#484848] leading-4">{l}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-center font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#484848] leading-4">{group.avgAttendance.toFixed(1)}% avg. attendance</p>
-          </div>
-        </div>
-
-        {/* Zone cards */}
-        <div className="flex flex-col gap-2 px-4">
-          {(Object.keys(ZONES) as Zone[]).map(zone => {
-            const z = ZONES[zone];
-            return (
-              <button
-                key={zone}
-                onClick={() => onSelectZone(zone)}
-                className="h-[72px] rounded-[8px] border flex items-center px-4 gap-4 text-left active:opacity-80 transition-opacity"
-                style={{ backgroundColor: z.bg, borderColor: z.border }}
-              >
-                <div className="flex-1 min-w-0 flex flex-col justify-center" style={{ color: z.text }}>
-                  <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] leading-6">{z.label}</span>
-                  <span className="font-['Noto_Sans',sans-serif] text-[14px] leading-5 truncate">{z.subtitle}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0" style={{ color: z.text }}>
-                  <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] leading-6">{zoneCounts[zone]}</span>
-                  <ChevronRight className="size-6" strokeWidth={1.5} />
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="shrink-0 p-3">
-        <button onClick={onAddMember} className="w-full h-14 bg-[#1441cc] rounded-full flex items-center justify-center gap-2 active:opacity-90 transition-opacity">
-          <UserPlus className="size-6 text-white" strokeWidth={1.5} />
-          <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-white tracking-[0.15px]">Add new member</span>
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ── Screen: Group Members ─────────────────────────────────────────────────────
-
-function RemoveFromSubgroupDialog({ firstName, subgroupLetter, groupName, onCancel, onConfirm }: { firstName: string; subgroupLetter: string; groupName: string; onCancel: () => void; onConfirm: () => void }) {
-  return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-      <motion.div
-        initial={{ scale: 0.92, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.92, opacity: 0 }}
-        transition={{ type: "tween", duration: 0.18, ease: "easeOut" }}
-        className="w-full bg-[#f4f6fa] rounded-[12px] overflow-hidden"
-      >
-        <div className="pt-[12px] px-[12px] pb-0 flex flex-col gap-[16px]">
-          <p className="font-['Noto_Sans',sans-serif] font-normal text-[24px] leading-[32px] text-black" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
-            Remove {firstName} from Subgroup {subgroupLetter}?
-          </p>
-          <p className="font-['Noto_Sans',sans-serif] font-normal text-[14px] leading-[20px] text-[#484848]" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
-            They'll stay a member of {groupName} — this only removes them from the subgroup. You can add them back anytime.
-          </p>
-        </div>
-        <div className="flex gap-[8px] items-center p-[12px]">
-          <button onClick={onConfirm} className="flex-1 h-[48px] rounded-[8px] flex items-center justify-center">
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] leading-[20px] text-[#d40000]" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
-              Remove
-            </span>
-          </button>
-          <button onClick={onCancel} className="flex-1 h-[48px] bg-[#1441cc] rounded-[8px] flex items-center justify-center">
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] leading-[20px] text-white" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
-              Cancel
-            </span>
-          </button>
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
 // Bottom sheet shown when a member row is tapped — same "Member Details" layout as the
 // Joining Requests detail sheet, minus the notes/accept-reject (not applicable to an existing member).
 const MEMBER_MONTHLY_EXAM_TOTAL = 300;
 
-function MemberDetailSheet({ member, isAdmin, onRemove, onClose, hideContactRow }: { member: Member; isAdmin?: boolean; onRemove?: () => void; onClose: () => void; hideContactRow?: boolean }) {
+function MemberDetailSheet({ member, onClose, hideContactRow }: { member: Member; onClose: () => void; hideContactRow?: boolean }) {
   const infoRows: Array<[string, string]> = [
     ["Preparing for", member.preparingFor],
     ["Gender", member.gender],
@@ -3357,20 +3230,6 @@ function MemberDetailSheet({ member, isAdmin, onRemove, onClose, hideContactRow 
         </div>
 
         <div className="shrink-0 flex flex-col gap-2 p-3">
-          {isAdmin && (
-            <div className="flex gap-2 items-center">
-              <button
-                onClick={onRemove}
-                className="flex-1 h-12 bg-[#ffdad6] rounded-full flex items-center justify-center gap-2 active:opacity-80 transition-opacity"
-              >
-                <UserMinus className="size-5 text-[#930000]" strokeWidth={1.5} />
-                <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-[#930000]">Remove</span>
-              </button>
-              <button className="flex-1 h-12 bg-[#1441cc] rounded-full flex items-center justify-center active:opacity-90 transition-opacity">
-                <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-white">Contact</span>
-              </button>
-            </div>
-          )}
           <button
             onClick={onClose}
             className="w-full h-[56px] rounded-[100px] border border-[#c7c7c7] flex items-center justify-center"
@@ -3436,18 +3295,15 @@ function SortBottomSheet({ value, onSelect, onClose, options = SORT_OPTIONS }: {
   );
 }
 
-function GroupMembersScreen({ onBack, group, zone, isAdmin }: { onBack: () => void; group: Group; zone?: Zone; isAdmin?: boolean }) {
+function GroupMembersScreen({ onBack, group }: { onBack: () => void; group: Group }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<MemberSort>("attendance");
   const [sorting, setSorting] = useState(false);
   const [selected, setSelected] = useState<Member | null>(null);
-  const [removing, setRemoving] = useState<Member | null>(null);
 
-  const zoneConfig = zone ? ZONES[zone] : null;
-  const base = zoneConfig ? MEMBER_LIST.filter(m => zoneConfig.match(m.pct)) : MEMBER_LIST;
-  const filtered = (query.trim() ? base.filter(m => m.name.toLowerCase().includes(query.trim().toLowerCase())) : base)
+  const filtered = (query.trim() ? MEMBER_LIST.filter(m => m.name.toLowerCase().includes(query.trim().toLowerCase())) : MEMBER_LIST)
     .slice()
     .sort((a, b) => {
       if (sortBy === "alphabetical") return a.name.localeCompare(b.name);
@@ -3461,25 +3317,14 @@ function GroupMembersScreen({ onBack, group, zone, isAdmin }: { onBack: () => vo
         {selected && (
           <MemberDetailSheet
             member={selected}
-            isAdmin={isAdmin}
-            onRemove={() => { setRemoving(selected); setSelected(null); }}
             onClose={() => setSelected(null)}
-          />
-        )}
-        {removing && (
-          <RemoveFromSubgroupDialog
-            firstName={removing.name.split(" ")[0]}
-            subgroupLetter={removing.subgroup}
-            groupName={group.name}
-            onCancel={() => setRemoving(null)}
-            onConfirm={() => setRemoving(null)}
           />
         )}
         {sorting && <SortBottomSheet value={sortBy} onSelect={setSortBy} onClose={() => setSorting(false)} />}
       </AnimatePresence>
 
       <InlineSearchHeader
-        title={zoneConfig ? zoneConfig.label : "Group members"}
+        title="Group members"
         onBack={onBack}
         searching={searching}
         onStartSearch={() => setSearching(true)}
@@ -3498,24 +3343,16 @@ function GroupMembersScreen({ onBack, group, zone, isAdmin }: { onBack: () => vo
         }
       />
 
-      {/* Sub-header: total count + badge (or zone total) */}
+      {/* Sub-header: total count + badge */}
       <div className="shrink-0 flex items-center gap-[8px] px-4 py-[6px]">
-        {zoneConfig ? (
-          <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black tracking-[0.1px] leading-[20px]" style={ns}>
-            Total {filtered.length}
+        <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black tracking-[0.1px] leading-[20px]" style={ns}>
+          Total members ({group.members}/100)
+        </span>
+        <div className="bg-[#0c5fff] rounded-[4px] px-2 h-5 flex items-center shrink-0">
+          <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-white leading-[16px]" style={ns}>
+            Open to Join
           </span>
-        ) : (
-          <>
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black tracking-[0.1px] leading-[20px]" style={ns}>
-              Total members ({group.members}/100)
-            </span>
-            <div className="bg-[#0c5fff] rounded-[4px] px-2 h-5 flex items-center shrink-0">
-              <span className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-white leading-[16px]" style={ns}>
-                Open to Join
-              </span>
-            </div>
-          </>
-        )}
+        </div>
       </div>
 
       {/* Column labels */}
@@ -3925,14 +3762,13 @@ function ChooseCaptainBottomSheet({ current, onCancel, onSave }: { current: stri
   );
 }
 
-function SubgroupDetailScreen({ onBack, sg, groupName, onTodayGoal, onMonthlyGoal, onAddMember, onCaptainSaved }: { onBack: () => void; sg: SubgroupData; groupName: string; onTodayGoal: () => void; onMonthlyGoal: () => void; onAddMember: () => void; onCaptainSaved: (name: string) => void }) {
+function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal, onAddMember, onCaptainSaved }: { onBack: () => void; sg: SubgroupData; onTodayGoal: () => void; onMonthlyGoal: () => void; onAddMember: () => void; onCaptainSaved: (name: string) => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [sortBy, setSortBy] = useState<MemberSort>("attendance");
   const [sorting, setSorting] = useState(false);
   const [showCaptain, setShowCaptain] = useState(false);
   const [choosingCaptain, setChoosingCaptain] = useState(false);
   const [selected, setSelected] = useState<Member | null>(null);
-  const [removing, setRemoving] = useState<Member | null>(null);
 
   const sortedMembers = MEMBER_LIST.slice().sort((a, b) => (
     sortBy === "alphabetical" ? a.name.localeCompare(b.name) : b.pct - a.pct
@@ -4013,18 +3849,7 @@ function SubgroupDetailScreen({ onBack, sg, groupName, onTodayGoal, onMonthlyGoa
         {selected && (
           <MemberDetailSheet
             member={selected}
-            isAdmin
-            onRemove={() => { setRemoving(selected); setSelected(null); }}
             onClose={() => setSelected(null)}
-          />
-        )}
-        {removing && (
-          <RemoveFromSubgroupDialog
-            firstName={removing.name.split(" ")[0]}
-            subgroupLetter={sg.letter}
-            groupName={groupName}
-            onCancel={() => setRemoving(null)}
-            onConfirm={() => setRemoving(null)}
           />
         )}
       </AnimatePresence>
@@ -4203,7 +4028,7 @@ function SubgroupDetailScreen({ onBack, sg, groupName, onTodayGoal, onMonthlyGoa
 
 // ──────────────────────────────────────────────────────────────────────────────
 
-function SubgroupListScreen({ onBack, group, onDetail, onCreateNew }: { onBack: () => void; group: Group; onDetail: (sg: typeof SUBGROUPS[0]) => void; onCreateNew?: () => void }) {
+function SubgroupListScreen({ onBack, group, onDetail }: { onBack: () => void; group: Group; onDetail: (sg: typeof SUBGROUPS[0]) => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [sortBy, setSortBy] = useState<SubgroupSort>("alphabetical");
   const [sorting, setSorting] = useState(false);
@@ -4335,21 +4160,9 @@ function SubgroupListScreen({ onBack, group, onDetail, onCreateNew }: { onBack: 
         </div>
       </div>
 
-      {onCreateNew && (
-        <div className="shrink-0 p-3">
-          <button
-            onClick={onCreateNew}
-            className="w-full h-14 bg-[#1441cc] rounded-full flex items-center justify-center active:opacity-90 transition-opacity"
-          >
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-white tracking-[0.15px]">Create new</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }
-
-// ── Screen: Admin / Create Subgroup ─────────────────────────────────────────────
 
 const MAX_SUBGROUP_MEMBERS = 20;
 
@@ -4504,221 +4317,6 @@ function AttendanceSortBottomSheet({ desc, onSelect, onClose }: { desc: boolean;
         </div>
       </motion.div>
     </motion.div>
-  );
-}
-
-function CreateSubgroupScreen({ onBack, onCreate }: { onBack: () => void; onCreate: (letter: string, captain: string) => void }) {
-  const nextLetter = String.fromCharCode(65 + SUBGROUPS.length);
-  const [step, setStep] = useState<1 | 2>(1);
-  const [searching, setSearching] = useState(false);
-  const [query, setQuery] = useState("");
-  const [sortDesc, setSortDesc] = useState(true);
-  const [sorting, setSorting] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [captain, setCaptain] = useState<string | null>(null);
-
-  const filtered = (query.trim() ? CREATE_SUBGROUP_CANDIDATES.filter(c => c.name.includes(query.trim())) : CREATE_SUBGROUP_CANDIDATES)
-    .slice()
-    .sort((a, b) => (sortDesc ? b.pct - a.pct : a.pct - b.pct));
-
-  function toggle(candidate: SubgroupCandidate) {
-    if (candidate.assignedTo) return;
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(candidate.name)) {
-        next.delete(candidate.name);
-      } else if (next.size < MAX_SUBGROUP_MEMBERS) {
-        next.add(candidate.name);
-      }
-      return next;
-    });
-  }
-
-  const selectedCandidates = CREATE_SUBGROUP_CANDIDATES.filter(c => selected.has(c.name));
-
-  if (step === 2) {
-    return (
-      <div className="flex flex-col h-full bg-white overflow-hidden">
-        <div className="shrink-0 relative flex items-center h-14 bg-white px-1">
-          <button
-            onClick={() => setStep(1)}
-            className="size-12 flex items-center justify-center rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors shrink-0"
-          >
-            <ArrowLeft className="size-6 text-[#484848]" strokeWidth={2} />
-          </button>
-          <div className="absolute left-14 flex flex-col">
-            <p className="font-['Noto_Sans',sans-serif] text-[18px] font-normal text-black leading-7 truncate">Create Subgroup</p>
-            <p className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#484848] leading-4 truncate">Step 2 of 2</p>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto flex flex-col gap-4 pt-4">
-          <div className="px-4">
-            <span className="font-['Noto_Sans',sans-serif] text-[14px] text-black leading-5">Choose group captain</span>
-          </div>
-          <div className="flex flex-col">
-            {selectedCandidates.map((candidate, i) => {
-              const chip = CHIP_STYLES[pctToChip(candidate.pct)];
-              return (
-                <div key={candidate.name}>
-                  <button
-                    onClick={() => setCaptain(candidate.name)}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-left active:bg-gray-50 transition-colors"
-                  >
-                    <MemberAvatar size={30} />
-                    <span className="flex-1 min-w-0 font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-6 truncate">
-                      {candidate.name}
-                    </span>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="rounded-[16px] h-6 px-3 flex items-center justify-center shrink-0" style={{ backgroundColor: chip.bg }}>
-                        <span className="font-['Noto_Sans',sans-serif] text-[12px] font-medium" style={{ color: chip.text }}>
-                          {candidate.pct.toFixed(1)}%
-                        </span>
-                      </div>
-                      <div className="relative size-5 shrink-0 rounded-full border-2 flex items-center justify-center" style={{ borderColor: captain === candidate.name ? "#1441cc" : "#787878" }}>
-                        {captain === candidate.name && <div className="size-2.5 rounded-full bg-[#1441cc]" />}
-                      </div>
-                    </div>
-                  </button>
-                  {i < selectedCandidates.length - 1 && <div className="mx-4 border-t border-[#C7C5CE]" />}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="shrink-0 p-3">
-          <button
-            onClick={() => captain && onCreate(nextLetter, captain)}
-            disabled={!captain}
-            className={clsx(
-              "w-full h-14 rounded-full flex items-center justify-center transition-opacity",
-              captain ? "bg-[#1441cc] active:opacity-90" : "bg-[#1441cc] opacity-40 cursor-not-allowed",
-            )}
-          >
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-white tracking-[0.15px]">Finish</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col h-full bg-white overflow-hidden relative">
-      <AnimatePresence>
-        {sorting && (
-          <AttendanceSortBottomSheet desc={sortDesc} onSelect={setSortDesc} onClose={() => setSorting(false)} />
-        )}
-      </AnimatePresence>
-
-      {searching ? (
-        <InlineSearchHeader
-          title="Create Subgroup"
-          onBack={onBack}
-          searching
-          onStartSearch={() => { }}
-          query={query}
-          onQueryChange={setQuery}
-          onExit={() => { setSearching(false); setQuery(""); }}
-          placeholder="Search by name"
-        />
-      ) : (
-        <div className="shrink-0 relative flex items-center justify-between px-1 h-14 bg-white">
-          <button
-            onClick={onBack}
-            className="size-12 flex items-center justify-center rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors shrink-0"
-          >
-            <ArrowLeft className="size-6 text-[#484848]" strokeWidth={2} />
-          </button>
-          <div className="absolute left-14 right-[104px] flex flex-col">
-            <p className="font-['Noto_Sans',sans-serif] text-[18px] font-normal text-black leading-7 truncate">Create Subgroup</p>
-            <p className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#484848] leading-4 truncate">Step 1 of 2</p>
-          </div>
-          <div className="flex items-center shrink-0">
-            <button
-              onClick={() => setSearching(true)}
-              className="size-12 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors"
-            >
-              <Search className="size-6 text-[#484848]" strokeWidth={1.5} />
-            </button>
-            <button
-              onClick={() => setSorting(true)}
-              aria-label="Sort"
-              className="size-12 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors"
-            >
-              <ArrowUpDown className="size-5 text-[#484848]" strokeWidth={1.5} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="flex-1 overflow-y-auto flex flex-col gap-4 pt-4">
-        <div className="px-4">
-          <div className="bg-[#f4f6fa] rounded-[12px] p-3 flex items-center gap-2">
-            <Layers className="size-5 text-black shrink-0" strokeWidth={1.5} />
-            <span className="font-['Noto_Sans',sans-serif] text-[14px] text-black leading-5">Subgroup {nextLetter} (Auto-named)</span>
-          </div>
-        </div>
-
-        <div className="px-4">
-          <span className="font-['Noto_Sans',sans-serif] text-[14px] text-black leading-5">
-            Select group members ({selected.size}/{MAX_SUBGROUP_MEMBERS})
-          </span>
-        </div>
-
-        <div className="flex flex-col">
-          {filtered.map((candidate, i) => {
-            const chip = CHIP_STYLES[pctToChip(candidate.pct)];
-            const isSelected = selected.has(candidate.name);
-            const disabled = !!candidate.assignedTo;
-            return (
-              <div key={candidate.name}>
-                <button
-                  onClick={() => toggle(candidate)}
-                  disabled={disabled}
-                  className={clsx("w-full flex items-center gap-2 px-4 py-2 text-left transition-colors", !disabled && "active:bg-gray-50")}
-                >
-                  <MemberAvatar size={30} />
-                  <span className="flex-1 min-w-0 font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-6 truncate">
-                    {candidate.name}
-                  </span>
-                  <div className="flex items-center gap-1 shrink-0">
-                    {candidate.assignedTo && <RatingBadge letter={candidate.assignedTo} />}
-                    <div className="rounded-[16px] h-6 px-3 flex items-center justify-center shrink-0" style={{ backgroundColor: chip.bg }}>
-                      <span className="font-['Noto_Sans',sans-serif] text-[12px] font-medium" style={{ color: chip.text }}>
-                        {candidate.pct.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div
-                      className={clsx(
-                        "size-[18px] rounded-[2px] shrink-0 flex items-center justify-center",
-                        disabled ? "opacity-38 border-2 border-black" : isSelected ? "bg-[#1441cc]" : "border-2 border-[#787878]",
-                      )}
-                    >
-                      {isSelected && !disabled && <Check className="size-3.5 text-white" strokeWidth={3} />}
-                    </div>
-                  </div>
-                </button>
-                {i < filtered.length - 1 && <div className="mx-4 border-t border-[#C7C5CE]" />}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="shrink-0 p-3">
-        <button
-          onClick={() => { setCaptain(selectedCandidates[0]?.name ?? null); setStep(2); }}
-          disabled={selected.size === 0}
-          className={clsx(
-            "w-full h-14 rounded-full flex items-center justify-center transition-opacity",
-            selected.size > 0 ? "bg-[#1441cc] active:opacity-90" : "bg-[#1441cc] opacity-40 cursor-not-allowed",
-          )}
-        >
-          <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-white tracking-[0.15px]">Next</span>
-        </button>
-      </div>
-    </div>
   );
 }
 
@@ -4888,14 +4486,13 @@ function CircularProgress({ pct, size = 69 }: { pct: number; size?: number }) {
 // Reached by tapping a mandatory exam from the admin's Monthly Goal screen — richer than the
 // Today's Goal exam view: live-exam stats + a monthly attendance donut + the 31-day goal chart,
 // then a member list sorted/searched like Group Members (tap a row for the same detail sheet).
-function MonthlyGoalExamDetailScreen({ examName, group, onBack }: { examName: string; group: Group; onBack: () => void }) {
+function MonthlyGoalExamDetailScreen({ examName, onBack }: { examName: string; onBack: () => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<MemberSort>("attendance");
   const [sorting, setSorting] = useState(false);
   const [selected, setSelected] = useState<Member | null>(null);
-  const [removing, setRemoving] = useState<Member | null>(null);
 
   const filtered = (query.trim() ? MEMBER_LIST.filter(m => m.name.toLowerCase().includes(query.trim().toLowerCase())) : MEMBER_LIST)
     .slice()
@@ -4911,18 +4508,7 @@ function MonthlyGoalExamDetailScreen({ examName, group, onBack }: { examName: st
         {selected && (
           <MemberDetailSheet
             member={selected}
-            isAdmin
-            onRemove={() => { setRemoving(selected); setSelected(null); }}
             onClose={() => setSelected(null)}
-          />
-        )}
-        {removing && (
-          <RemoveFromSubgroupDialog
-            firstName={removing.name.split(" ")[0]}
-            subgroupLetter={removing.subgroup}
-            groupName={group.name}
-            onCancel={() => setRemoving(null)}
-            onConfirm={() => setRemoving(null)}
           />
         )}
         {sorting && <SortBottomSheet value={sortBy} onSelect={setSortBy} onClose={() => setSorting(false)} />}
