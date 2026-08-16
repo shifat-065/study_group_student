@@ -1544,7 +1544,7 @@ function GroupSettingsSheet({
   );
 }
 
-function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, onSubgroups, onTodayGoal, onMonthlyGoal, onDiscussion, onFacebookGroup, onSelectExam, onSelectQuickLink, onViewGroupRules, announcement }: { group: Group; onBack: () => void; onActivityLog: () => void; onRank: () => void; onMembers: () => void; onSubgroups: () => void; onTodayGoal: () => void; onMonthlyGoal: () => void; onDiscussion: () => void; onFacebookGroup: () => void; onSelectExam: (examName: string, isLive: boolean) => void; onSelectQuickLink: (link: QuickLink) => void; onViewGroupRules: () => void; announcement: { title: string; body: string; date: string } }) {
+function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, onSubgroups, onTodayGoal, onMonthlyGoal, onDiscussion, onFacebookGroup, onSelectExam, onSelectQuickLink, onViewGroupRules, onLeaveGroup, announcement }: { group: Group; onBack: () => void; onActivityLog: () => void; onRank: () => void; onMembers: () => void; onSubgroups: () => void; onTodayGoal: () => void; onMonthlyGoal: () => void; onDiscussion: () => void; onFacebookGroup: () => void; onSelectExam: (examName: string, isLive: boolean) => void; onSelectQuickLink: (link: QuickLink) => void; onViewGroupRules: () => void; onLeaveGroup: () => void; announcement: { title: string; body: string; date: string } }) {
   const [showSettings, setShowSettings] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
@@ -1569,7 +1569,7 @@ function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, on
         {showLeaveConfirm && (
           <LeaveGroupDialog
             key="leave"
-            onLeave={onBack}
+            onLeave={onLeaveGroup}
             onStay={() => setShowLeaveConfirm(false)}
           />
         )}
@@ -5329,6 +5329,15 @@ function PrototypeApp() {
     setStack(["home"]);
   }
 
+  // "Leave" on the Leave Group dialog — drops the student back on the Group List
+  // (onboarding) screen rather than just popping one screen up the stack.
+  function leaveGroup() {
+    dirRef.current = -1;
+    window.history.replaceState({ depth: 0 }, "");
+    setStack(["groupList"]);
+    showSnackbar(`You have left ${selectedGroup?.name ?? "the group"}`);
+  }
+
   return (
     <div className="relative w-full h-full overflow-hidden">
       <AnimatePresence mode="popLayout" custom={dir}>
@@ -5451,6 +5460,7 @@ function PrototypeApp() {
               onSelectExam={(examName, isLive) => { setSelectedExamName(examName); setSelectedExamLive(isLive); setSelectedExamList(MANDATORY_EXAMS); goTo("examPage"); }}
               onSelectQuickLink={(link) => { setSelectedQuickLink(link); goTo("quickLinkPage"); }}
               onViewGroupRules={() => goTo("groupRules")}
+              onLeaveGroup={leaveGroup}
             />
           </motion.div>
         )}
