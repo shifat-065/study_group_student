@@ -4989,6 +4989,13 @@ function JoinGroupPendingScreen({ group, onBack, onViewRules, onCancelRequest, o
   const [showExamsInfo, setShowExamsInfo] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
+  // Demo-only stand-in for the admin actually reviewing the request — auto-advances
+  // into the group after a short wait so the pending state doesn't dead-end.
+  useEffect(() => {
+    const timeout = setTimeout(onKeepWaiting, 3000);
+    return () => clearTimeout(timeout);
+  }, [onKeepWaiting]);
+
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden relative">
       <AnimatePresence>
