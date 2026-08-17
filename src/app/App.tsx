@@ -213,29 +213,17 @@ const MANDATORY_EXAMS_INFO_TEXT = `বাধ্যতামূলক পরী�
 
 function MandatoryExamsInfoBottomSheet({ onClose }: { onClose: () => void }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="absolute inset-0 z-50 flex flex-col justify-end bg-black/40"
-      onClick={onClose}
-    >
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 px-6" onClick={onClose}>
       <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "tween", duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-        className="bg-white rounded-tl-[16px] rounded-tr-[16px] shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden max-h-[85%]"
+        initial={{ scale: 0.92, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.92, opacity: 0 }}
+        transition={{ type: "tween", duration: 0.18, ease: "easeOut" }}
+        className="w-full bg-white rounded-[12px] shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden max-h-[80%]"
         onClick={e => e.stopPropagation()}
       >
-        {/* Drag handle */}
-        <div className="flex flex-col items-center p-[16px] shrink-0">
-          <div className="bg-[#787878] h-[4px] rounded-[100px] w-[32px]" />
-        </div>
-
         {/* Title */}
-        <div className="px-[16px] shrink-0">
+        <div className="px-[16px] pt-[16px] shrink-0">
           <p
             className="font-['Noto_Sans',sans-serif] font-normal text-[18px] leading-[28px] text-black"
             style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}
@@ -245,7 +233,7 @@ function MandatoryExamsInfoBottomSheet({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto mt-[24px]">
+        <div className="flex-1 overflow-y-auto mt-[16px]">
           <div className="bg-white px-[16px] py-[8px]">
             <p
               className="font-['Noto_Sans',sans-serif] font-normal text-[14px] leading-[20px] text-[#484848] whitespace-pre-wrap"
@@ -271,7 +259,7 @@ function MandatoryExamsInfoBottomSheet({ onClose }: { onClose: () => void }) {
           </button>
         </div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 }
 
