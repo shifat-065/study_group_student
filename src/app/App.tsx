@@ -4373,14 +4373,33 @@ function MonthlyGoalExamDetailScreen({ examName, onBack }: { examName: string; o
 
 // Circular multi-color mark standing in for each group's logo — no real group photos
 // are available, so every group gets the same three-tone pie rather than a blank avatar.
-function GroupLogo({ size = 40 }: { size?: number }) {
+// Distinct conic-gradient combos so each group in a list reads as visually different at a
+// glance, instead of every card showing the same blue/yellow/green pie.
+const GROUP_LOGO_PALETTES: Array<[string, string, string]> = [
+  ["#4285f4", "#fbbc05", "#34a853"],
+  ["#ef4444", "#f97316", "#eab308"],
+  ["#8b5cf6", "#ec4899", "#f43f5e"],
+  ["#06b6d4", "#3b82f6", "#6366f1"],
+  ["#10b981", "#14b8a6", "#0ea5e9"],
+  ["#f59e0b", "#d97706", "#b45309"],
+  ["#a855f7", "#d946ef", "#ec4899"],
+  ["#22c55e", "#84cc16", "#eab308"],
+  ["#f43f5e", "#fb7185", "#fda4af"],
+  ["#0ea5e9", "#38bdf8", "#7dd3fc"],
+];
+
+function GroupLogo({ size = 40, seed = 0 }: { size?: number; seed?: number | string }) {
+  const hash = typeof seed === "string"
+    ? seed.split("").reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 0)
+    : seed;
+  const [a, b, c] = GROUP_LOGO_PALETTES[hash % GROUP_LOGO_PALETTES.length];
   return (
     <div
       className="rounded-full shrink-0"
       style={{
         width: size,
         height: size,
-        background: "conic-gradient(#4285f4 0deg 130deg, #fbbc05 130deg 245deg, #34a853 245deg 360deg)",
+        background: `conic-gradient(${a} 0deg 130deg, ${b} 130deg 245deg, ${c} 245deg 360deg)`,
       }}
     />
   );
@@ -4519,7 +4538,7 @@ function GroupSummaryCard({ group }: { group: Group }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   return (
     <div className="flex gap-3 p-3 w-full items-start">
-      <GroupLogo size={40} />
+      <GroupLogo size={40} seed={group.id} />
       <div className="flex-1 min-w-0 flex flex-col gap-1">
         <div className="flex items-center justify-between gap-2">
           <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px] truncate" style={ns}>{group.name}</span>
@@ -4632,7 +4651,7 @@ function GroupListScreen({ onBack, onSelectGroup }: { onBack: () => void; onSele
 function JoinGroupInfoCard({ group, onShowAdminDetails }: { group: Group; onShowAdminDetails: () => void }) {
   return (
     <div className="flex gap-3 items-start">
-      <GroupLogo size={60} />
+      <GroupLogo size={60} seed={group.id} />
       <div className="flex-1 min-w-0 flex flex-col gap-2">
         <p className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px]">{group.name}</p>
         <div className="flex flex-col gap-1">
@@ -4937,7 +4956,7 @@ function JoinGroupPendingScreen({ group, onBack, onViewRules, onCancelRequest, o
   // Demo-only stand-in for the admin actually reviewing the request — auto-advances
   // into the group after a short wait so the pending state doesn't dead-end.
   useEffect(() => {
-    const timeout = setTimeout(onKeepWaiting, 3000);
+    const timeout = setTimeout(onKeepWaiting, 2000);
     return () => clearTimeout(timeout);
   }, [onKeepWaiting]);
 
