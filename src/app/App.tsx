@@ -1766,8 +1766,13 @@ function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, on
           </div>
         </div>
 
-        {/* Mandatory exams */}
+        {/* Bottom tiles */}
         <div className="px-4 pb-4">
+          <ExamQuickLinks onSelect={onSelectQuickLink} />
+        </div>
+
+        {/* Mandatory exams */}
+        <div className="px-4 pb-8">
           <div className="flex items-center justify-between mb-3">
             <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px]" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
               বাধ্যতামূলক পরীক্ষাসমূহ
@@ -1798,11 +1803,6 @@ function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, on
               </button>
             ))}
           </div>
-        </div>
-
-        {/* Bottom tiles */}
-        <div className="px-4 pb-8">
-          <ExamQuickLinks onSelect={onSelectQuickLink} />
         </div>
       </div>
     </div>
