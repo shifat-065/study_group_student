@@ -248,7 +248,7 @@ function MandatoryExamsInfoBottomSheet({ onClose }: { onClose: () => void }) {
         <div className="shrink-0 p-[12px]">
           <button
             onClick={onClose}
-            className="w-full h-[56px] rounded-[100px] border border-[#c7c7c7] flex items-center justify-center"
+            className="w-full h-[56px] rounded-[12px] border border-[#c7c7c7] flex items-center justify-center"
           >
             <span
               className="font-['Noto_Sans',sans-serif] font-medium text-[16px] leading-[24px] tracking-[0.15px] text-[#484848]"
