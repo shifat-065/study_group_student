@@ -4833,18 +4833,18 @@ function JoinGroupScreen({ group, onBack, onViewRules, onJoin }: { group: Group;
 
         <div className="flex gap-2">
           <button
-            onClick={onViewRules}
-            className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
-          >
-            <AlertCircle className="size-5 text-[#484848]" strokeWidth={1.5} />
-            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848]">গ্রুপের নিয়মাবলী</span>
-          </button>
-          <button
             onClick={onJoin}
             className="flex-1 h-12 bg-[#1441cc] rounded-full flex items-center justify-center gap-2 active:opacity-90 transition-opacity"
           >
             <UserPlus className="size-5 text-white" strokeWidth={1.75} />
             <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-white">Join Group</span>
+          </button>
+          <button
+            onClick={onViewRules}
+            className="flex-1 h-12 rounded-full border border-[#c7c7c7] flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
+          >
+            <AlertCircle className="size-5 text-[#484848]" strokeWidth={1.5} />
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848]">গ্রুপের নিয়মাবলী</span>
           </button>
         </div>
 
