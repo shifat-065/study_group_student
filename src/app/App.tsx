@@ -4090,7 +4090,7 @@ function AttendanceSortBottomSheet({ desc, onSelect, onClose }: { desc: boolean;
 
 // ── Screen: Exam Attendance — Member list ─────────────────────────────────────
 
-function ExamAttendanceMembersScreen({ examName, attended, onBack }: { examName: string; attended: number; onBack: () => void }) {
+function ExamAttendanceMembersScreen({ onBack }: { onBack: () => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
@@ -4098,21 +4098,12 @@ function ExamAttendanceMembersScreen({ examName, attended, onBack }: { examName:
   const [sorting, setSorting] = useState(false);
   const [selected, setSelected] = useState<Member | null>(null);
 
-  // Deterministically pick which members "attended" this specific exam, so the header
-  // count and the per-row Attended/Not attended badges always agree, and different exams
-  // show different attendees instead of always the same people.
-  const examOffset = examName.split("").reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 0) % MEMBER_LIST.length;
-  const rotatedMembers = [...MEMBER_LIST.slice(examOffset), ...MEMBER_LIST.slice(0, examOffset)];
-  const attendedIds = new Set(rotatedMembers.slice(0, attended).map(m => m.memberId));
-
   const filtered = (query.trim() ? MEMBER_LIST.filter(m => m.name.toLowerCase().includes(query.trim().toLowerCase())) : MEMBER_LIST)
     .slice()
     .sort((a, b) => {
       if (sortBy === "alphabetical") return a.name.localeCompare(b.name);
       if (sortBy === "subgroup") return a.subgroup.localeCompare(b.subgroup);
-      const aAttended = attendedIds.has(a.memberId) ? 1 : 0;
-      const bAttended = attendedIds.has(b.memberId) ? 1 : 0;
-      return bAttended - aAttended;
+      return b.pct - a.pct;
     });
 
   return (
@@ -4122,64 +4113,31 @@ function ExamAttendanceMembersScreen({ examName, attended, onBack }: { examName:
         {sorting && <SortBottomSheet value={sortBy} onSelect={setSortBy} onClose={() => setSorting(false)} />}
       </AnimatePresence>
 
-      {/* App bar */}
-      {searching ? (
-        <InlineSearchHeader
-          title="Exam Attendance"
-          onBack={onBack}
-          searching
-          onStartSearch={() => { }}
-          query={query}
-          onQueryChange={setQuery}
-          onExit={() => { setSearching(false); setQuery(""); }}
-          placeholder="Search by name"
-        />
-      ) : (
-        <div className="shrink-0 flex items-start gap-2 px-1 pt-1 pb-2">
+      <InlineSearchHeader
+        title="Member attendance"
+        onBack={onBack}
+        searching={searching}
+        onStartSearch={() => setSearching(true)}
+        query={query}
+        onQueryChange={setQuery}
+        onExit={() => { setSearching(false); setQuery(""); }}
+        placeholder="Search by name"
+        trailing={
           <button
-            onClick={onBack}
-            className="size-12 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors shrink-0"
+            onClick={() => setSorting(true)}
+            aria-label="Sort"
+            className="size-12 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors"
           >
-            <ArrowLeft className="size-6 text-[#484848]" strokeWidth={2} />
+            <ArrowUpDown className="size-5 text-[#484848]" strokeWidth={1.5} />
           </button>
-          <div className="flex-1 flex flex-col pt-3 min-w-0">
-            <p className="font-['Noto_Sans',sans-serif] font-normal text-[20px] text-black leading-[28px] truncate" style={ns}>
-              Exam Attendance
-            </p>
-            <p className="font-['Noto_Sans',sans-serif] font-normal text-[13px] text-[#484848] leading-[18px] truncate" style={ns}>
-              {examName}
-            </p>
-          </div>
-          <div className="flex items-center shrink-0">
-            <button
-              onClick={() => setSearching(true)}
-              className="size-12 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors"
-            >
-              <Search className="size-6 text-[#484848]" strokeWidth={1.5} />
-            </button>
-            <button
-              onClick={() => setSorting(true)}
-              aria-label="Sort"
-              className="size-12 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors"
-            >
-              <ArrowUpDown className="size-5 text-[#484848]" strokeWidth={1.5} />
-            </button>
-          </div>
-        </div>
-      )}
+        }
+      />
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-3 px-4 pb-8">
-          <span
-            className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-[24px]"
-            style={ns}
-          >
-            Exam attend ({attended}/{MEMBER_LIST.length})
-          </span>
-
+        <div className="flex flex-col gap-1 px-4 pb-8">
           {/* Column labels */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between py-2">
             <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#787878] leading-[16px]" style={ns}>Member</span>
             <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#787878] leading-[16px]" style={ns}>Attendance</span>
           </div>
@@ -4187,8 +4145,7 @@ function ExamAttendanceMembersScreen({ examName, attended, onBack }: { examName:
           {/* Member list */}
           <div className="flex flex-col">
             {filtered.map((member, i) => {
-              const hasAttended = attendedIds.has(member.memberId);
-              const chip = hasAttended ? CHIP_STYLES.green : CHIP_STYLES.yellow;
+              const chip = CHIP_STYLES[pctToChip(member.pct)];
               return (
                 <div key={member.memberId}>
                   <button
@@ -4206,12 +4163,12 @@ function ExamAttendanceMembersScreen({ examName, attended, onBack }: { examName:
                     </div>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
                       <RatingBadge letter={member.rating} />
-                      <div className="rounded-[16px] px-3 py-1 shrink-0 whitespace-nowrap" style={{ backgroundColor: chip.bg }}>
+                      <div className="rounded-[16px] h-6 px-3 flex items-center justify-center shrink-0" style={{ backgroundColor: chip.bg }}>
                         <span
                           className="font-['Noto_Sans',sans-serif] font-medium text-[12px] leading-[16px]"
-                          style={{ ...ns, color: chip.text }}
+                          style={{ color: chip.text }}
                         >
-                          {hasAttended ? "Attended" : "Not attended yet"}
+                          {member.pct.toFixed(1)}%
                         </span>
                       </div>
                     </div>
@@ -5049,7 +5006,6 @@ function PrototypeApp() {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [selectedSubgroup, setSelectedSubgroup] = useState<SubgroupData | null>(null);
   const [selectedExamName, setSelectedExamName] = useState<string | null>(null);
-  const [selectedExamAttended, setSelectedExamAttended] = useState(0);
   const announcement = {
     title: "New Announcements",
     body: "Live class on Bangladesh Affairs starts tomorrow at 8 PM",
@@ -5209,7 +5165,7 @@ function PrototypeApp() {
           </motion.div>
         )}
 
-        {screen === "examAttendanceMembers" && selectedExamName && (
+        {screen === "examAttendanceMembers" && (
           <motion.div
             key="examAttendanceMembers"
             custom={dir}
@@ -5220,7 +5176,7 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <ExamAttendanceMembersScreen examName={selectedExamName} attended={selectedExamAttended} onBack={goBack} />
+            <ExamAttendanceMembersScreen onBack={goBack} />
           </motion.div>
         )}
 
@@ -5437,8 +5393,8 @@ function PrototypeApp() {
               sg={selectedSubgroup}
               override={todayGoalOverride ?? undefined}
               onBack={goBack}
-              onSelectExam={(exam) => { setSelectedExamName(exam.name); setSelectedExamAttended(exam.attended); goTo("examAttendanceMembers"); }}
-              onViewAttendance={(exam) => { setSelectedExamName(exam.name); setSelectedExamAttended(exam.attended); goTo("examAttendanceMembers"); }}
+              onSelectExam={() => goTo("examAttendanceMembers")}
+              onViewAttendance={() => goTo("examAttendanceMembers")}
             />
           </motion.div>
         )}
