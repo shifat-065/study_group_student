@@ -7,7 +7,7 @@ import {
   UserPlus, Search, ArrowUpDown, ChevronRight,
   ThumbsUp, MessageCircle, Share2, Send, Globe, MoreHorizontal, ImageIcon, Star, User, Users,
   CalendarDays, Archive, ClipboardCheck, Trophy, FileText, Copy, Pencil, X, Gift, Headphones, Sprout,
-  Filter, Calendar, Clock, Award, Presentation, FileSpreadsheet, BarChart3,
+  Filter, Calendar, Clock, Award, PlaySquare, FileSpreadsheet, BarChart3,
   type LucideIcon,
 } from "lucide-react";
 import { clsx } from "clsx";
@@ -661,7 +661,7 @@ function ResultScreen({ onBack }: { onBack: () => void }) {
                 <span className="w-0 h-0 border-y-[4px] border-y-transparent border-l-[6px] border-l-[#1441cc] ml-0.5" />
               </div>
               <div className="flex items-center gap-2.5">
-                {RESULT_EXAMS[0].hasSlideshow && <Presentation className="size-5 text-[#484848]" />}
+                {RESULT_EXAMS[0].hasSlideshow && <PlaySquare className="size-5 text-[#484848]" strokeWidth={1.5} />}
                 {RESULT_EXAMS[0].hasPdf && <FileSpreadsheet className="size-5 text-[#484848]" />}
               </div>
             </div>
@@ -761,7 +761,7 @@ function ResultScreen({ onBack }: { onBack: () => void }) {
                 <span className="w-0 h-0 border-y-[4px] border-y-transparent border-l-[6px] border-l-[#1441cc] ml-0.5" />
               </div>
               <div className="flex items-center gap-2.5">
-                {RESULT_EXAMS[2].hasSlideshow && <Presentation className="size-5 text-[#484848]" />}
+                {RESULT_EXAMS[2].hasSlideshow && <PlaySquare className="size-5 text-[#484848]" strokeWidth={1.5} />}
               </div>
             </div>
 
