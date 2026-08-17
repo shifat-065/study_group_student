@@ -4110,7 +4110,7 @@ function ExamAttendanceMembersScreen({ onBack }: { onBack: () => void }) {
     <div className="flex flex-col h-full bg-white overflow-hidden relative">
       <AnimatePresence>
         {selected && <MemberDetailSheet member={selected} hideContactRow onClose={() => setSelected(null)} />}
-        {sorting && <SortBottomSheet value={sortBy} onSelect={setSortBy} onClose={() => setSorting(false)} />}
+        {sorting && <SortBottomSheet value={sortBy} onSelect={setSortBy} onClose={() => setSorting(false)} options={SUBGROUP_MEMBER_SORT_OPTIONS} />}
       </AnimatePresence>
 
       <InlineSearchHeader
