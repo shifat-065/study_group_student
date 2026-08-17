@@ -5416,7 +5416,7 @@ function PrototypeApp() {
               override={todayGoalOverride ?? undefined}
               onBack={goBack}
               onSelectExam={(exam) => { setSelectedExamName(exam.name); goTo("monthlyGoalExamDetail"); }}
-              onViewAttendance={(exam) => { setSelectedExamName(exam.name); goTo("monthlyGoalExamDetail"); }}
+              onViewAttendance={() => goTo("examAttendanceMembers")}
             />
           </motion.div>
         )}
