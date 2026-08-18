@@ -3079,14 +3079,14 @@ function pctToChip(pct: number): AttendanceChip {
 // ── Subgroup data ─────────────────────────────────────────────────────────────
 
 const SUBGROUPS = [
-  { letter: "A", captain: "Atiqul Haque", members: 10, attended: 10, goalPct: 96.0, isMyGroup: true, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "B", captain: "রাকিবুল শেখ", members: 6, attended: 3, goalPct: 50.5, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "C", captain: "ফারহান রানা", members: 8, attended: 2, goalPct: 20.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "D", captain: "রায়হান আকরাম", members: 12, attended: 10, goalPct: 85.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "E", captain: "বায়েজিদ ইসলাম", members: 6, attended: 4, goalPct: 70.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "F", captain: "তাহমিনা সুলতানা", members: 6, attended: 3, goalPct: 45.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "G", captain: "আসাদুজ্জামান কবির", members: 4, attended: 4, goalPct: 92.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "H", captain: "ঐশী হক", members: 12, attended: 4, goalPct: 33.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "A", captain: "Atiqul Haque", members: 10, attended: 10, goalPct: 96.0, monthlyGoalPct: 33.0, isMyGroup: true, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "B", captain: "রাকিবুল শেখ", members: 6, attended: 3, goalPct: 50.5, monthlyGoalPct: 50.5, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "C", captain: "ফারহান রানা", members: 8, attended: 2, goalPct: 20.0, monthlyGoalPct: 20.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "D", captain: "রায়হান আকরাম", members: 12, attended: 10, goalPct: 85.0, monthlyGoalPct: 85.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "E", captain: "বায়েজিদ ইসলাম", members: 6, attended: 4, goalPct: 70.0, monthlyGoalPct: 70.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "F", captain: "তাহমিনা সুলতানা", members: 6, attended: 3, goalPct: 45.0, monthlyGoalPct: 45.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "G", captain: "আসাদুজ্জামান কবির", members: 4, attended: 4, goalPct: 92.0, monthlyGoalPct: 92.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "H", captain: "ঐশী হক", members: 12, attended: 4, goalPct: 33.0, monthlyGoalPct: 33.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
 ];
 
 // ── Shared: progress bar for subgroup goal ────────────────────────────────────
@@ -3534,9 +3534,9 @@ function GoalDetailScreen({ mode, sg, onBack, onSelectExam, onViewAttendance, ov
     // daily rate of ~5 exams per member — so it's always meaningfully larger than any one
     // day's total (e.g. 10 members × 5 × 30 = 1500, well above a ~40-60 daily range).
     bigCount = mode === "today" ? memberCount * examList.length : memberCount * 5 * 30;
-    attended = Math.round(bigCount * sg.goalPct / 100);
+    goalPct = mode === "today" ? sg.goalPct : sg.monthlyGoalPct;
+    attended = Math.round(bigCount * goalPct / 100);
     remaining = Math.max(bigCount - attended, 0);
-    goalPct = sg.goalPct;
 
     // Split bigCount evenly across the exam rows (largest-remainder, so it sums back to
     // bigCount exactly), then split attended the same way across those per-row totals —
@@ -3809,9 +3809,9 @@ function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal }: { onBa
   // Monthly total is a month-scale aggregate (see GoalDetailScreen), not the exam-type row
   // count, so it's always meaningfully larger than a single day's total.
   const monthTotal = sg.members * 5 * 30;
-  const monthAttended = Math.round(monthTotal * sg.goalPct / 100);
+  const monthAttended = Math.round(monthTotal * sg.monthlyGoalPct / 100);
   const todayPct = sg.goalPct;
-  const monthPct = sg.goalPct;
+  const monthPct = sg.monthlyGoalPct;
 
   function GoalCard({ title, attended, total, footerLabel, footerPct, onPress }: {
     title: string; attended: number; total: number; footerLabel: string; footerPct: number; onPress: () => void;
@@ -4369,7 +4369,7 @@ function MonthlyGoalExamDetailScreen({ examName, sg, override, onBack }: { examN
   // Group-level entry (override set) shows the whole group; reached from a specific
   // subgroup's Monthly Goal, only that subgroup's own members/stats should show here.
   const monthTotal = override ? override.bigCount : sg.members * 4;
-  const monthAttended = override ? override.attended : sg.attended;
+  const monthAttended = override ? override.attended : Math.round(monthTotal * sg.monthlyGoalPct / 100);
   const monthRemaining = override ? override.remaining : Math.max(monthTotal - monthAttended, 0);
   const monthBarPct = override ? override.barPct : monthTotal > 0 ? (monthAttended / monthTotal) * 100 : 0;
   const pool = override ? MEMBER_LIST : MEMBER_LIST.filter(m => m.subgroup === sg.letter);
