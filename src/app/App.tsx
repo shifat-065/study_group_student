@@ -3748,7 +3748,7 @@ function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal }: { onBa
   const [showCaptain, setShowCaptain] = useState(false);
   const [selected, setSelected] = useState<Member | null>(null);
 
-  const sortedMembers = MEMBER_LIST.slice().sort((a, b) => (
+  const sortedMembers = MEMBER_LIST.filter(m => m.subgroup === sg.letter).sort((a, b) => (
     sortBy === "alphabetical" ? a.name.localeCompare(b.name) : b.pct - a.pct
   ));
 
