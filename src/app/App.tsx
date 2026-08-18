@@ -3483,6 +3483,17 @@ const EXAM_LIST: ExamListItem[] = [
   { name: "ব্যাংক মডেল টেস্ট [সাপ্তাহিক]", attended: 4, total: MEMBER_LIST.length },
 ];
 
+// Monthly Goal shows the full mandatory-exam list (Today's Goal only shows a trimmed 4).
+const MONTHLY_EXAM_LIST: ExamListItem[] = [
+  { name: "ফ্রি সাপ্তাহিক মডেল টেস্ট", attended: 8, total: MEMBER_LIST.length },
+  { name: "১৪০ দিনে ৪৭তম বিসিএস প্রস্তুতি", attended: 6, total: MEMBER_LIST.length },
+  { name: "গুরুত্বপূর্ণ টপিকের উপর পরীক্ষা", attended: 10, total: MEMBER_LIST.length },
+  { name: "ব্যাংক নিয়োগ প্রস্তুতি - লং কোর্স", attended: 5, total: MEMBER_LIST.length },
+  { name: "২০২২ সাল ভিত্তিক সিনিয়র অফিসার নিয়োগ প্রস্তুতি", attended: 7, total: MEMBER_LIST.length },
+  { name: "ব্যাংক ডেইলি কুইজ", attended: 9, total: MEMBER_LIST.length },
+  { name: "ব্যাংক মডেল টেস্ট [সাপ্তাহিক]", attended: 4, total: MEMBER_LIST.length },
+];
+
 type GoalMode = "today" | "monthly";
 
 // The admin's own group-level "Today's goal" / "Monthly goal" card — both use the same
@@ -3501,6 +3512,7 @@ function GoalDetailScreen({ mode, sg, onBack, onSelectExam, onViewAttendance, ov
   const [showExamsInfo, setShowExamsInfo] = useState(false);
 
   const title = mode === "today" ? "Today's goal" : "Monthly goal";
+  const examList = mode === "today" ? EXAM_LIST : MONTHLY_EXAM_LIST;
 
   // The admin's own group-level entry (override set) keeps its fixed Figma numbers — not
   // derived from any subgroup's math. Reached from a specific subgroup instead, sg.goalPct
@@ -3514,16 +3526,16 @@ function GoalDetailScreen({ mode, sg, onBack, onSelectExam, onViewAttendance, ov
     attended = override.attended;
     remaining = override.remaining;
     goalPct = override.goalPct;
-    examRows = EXAM_LIST.map(exam => ({ ...exam }));
+    examRows = examList.map(exam => ({ ...exam }));
   } else {
     const memberCount = sg.members;
-    bigCount = memberCount * EXAM_LIST.length;
+    bigCount = memberCount * examList.length;
     attended = Math.round(bigCount * sg.goalPct / 100);
     remaining = Math.max(bigCount - attended, 0);
     goalPct = sg.goalPct;
     let toDistribute = attended;
-    examRows = EXAM_LIST.map((exam, i) => {
-      const rowsLeft = EXAM_LIST.length - i;
+    examRows = examList.map((exam, i) => {
+      const rowsLeft = examList.length - i;
       const share = Math.max(0, Math.min(memberCount, Math.round(toDistribute / rowsLeft)));
       toDistribute -= share;
       return { ...exam, total: memberCount, attended: share };
@@ -3777,16 +3789,13 @@ function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal }: { onBa
   // stays at 96%) — everything else here is derived from it, matching the same derivation
   // GoalDetailScreen (Today's/Monthly Goal) uses, so this preview card and its goal chip
   // always show the exact numbers you'll see after tapping in.
-  const examTotalSum = EXAM_LIST.length * sg.members;
-  const examAttendedSum = Math.round(examTotalSum * sg.goalPct / 100);
-  const examPct = sg.goalPct;
-  const goalChipColor = pctChipStyle(examPct);
-  const todayAttended = examAttendedSum;
-  const todayTotal = examTotalSum;
-  const monthAttended = examAttendedSum;
-  const monthTotal = examTotalSum;
-  const todayPct = examPct;
-  const monthPct = examPct;
+  const goalChipColor = pctChipStyle(sg.goalPct);
+  const todayTotal = EXAM_LIST.length * sg.members;
+  const todayAttended = Math.round(todayTotal * sg.goalPct / 100);
+  const monthTotal = MONTHLY_EXAM_LIST.length * sg.members;
+  const monthAttended = Math.round(monthTotal * sg.goalPct / 100);
+  const todayPct = sg.goalPct;
+  const monthPct = sg.goalPct;
 
   function GoalCard({ title, attended, total, footerLabel, footerPct, onPress }: {
     title: string; attended: number; total: number; footerLabel: string; footerPct: number; onPress: () => void;
@@ -3911,14 +3920,14 @@ function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal }: { onBa
                     className="font-['Noto_Sans',sans-serif] font-normal text-[12px] leading-[16px]"
                     style={{ ...ns, color: goalChipColor.text }}
                   >
-                    {examPct.toFixed(1)}%
+                    {sg.goalPct.toFixed(1)}%
                   </span>
                 </div>
                 <span
                   className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#484848] leading-[16px]"
                   style={ns}
                 >
-                  {sg.members} members • {examAttendedSum} attended
+                  {sg.members} members • {todayAttended} attended
                 </span>
               </div>
             </div>
