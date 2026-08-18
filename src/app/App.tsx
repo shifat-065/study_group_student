@@ -4182,7 +4182,7 @@ function AttendanceSortBottomSheet({ desc, onSelect, onClose }: { desc: boolean;
 
 // ── Screen: Exam Attendance — Member list ─────────────────────────────────────
 
-function ExamAttendanceMembersScreen({ onBack }: { onBack: () => void }) {
+function ExamAttendanceMembersScreen({ onBack, subgroupLetter }: { onBack: () => void; subgroupLetter?: string }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
@@ -4190,7 +4190,11 @@ function ExamAttendanceMembersScreen({ onBack }: { onBack: () => void }) {
   const [sorting, setSorting] = useState(false);
   const [selected, setSelected] = useState<Member | null>(null);
 
-  const filtered = (query.trim() ? MEMBER_LIST.filter(m => m.name.toLowerCase().includes(query.trim().toLowerCase())) : MEMBER_LIST)
+  // Reached from a specific subgroup's Today's/Monthly Goal, only that subgroup's members
+  // should appear here — otherwise (the admin's own group-level entry) it's the whole group.
+  const pool = subgroupLetter ? MEMBER_LIST.filter(m => m.subgroup === subgroupLetter) : MEMBER_LIST;
+
+  const filtered = (query.trim() ? pool.filter(m => m.name.toLowerCase().includes(query.trim().toLowerCase())) : pool)
     .slice()
     .sort((a, b) => {
       if (sortBy === "alphabetical") return a.name.localeCompare(b.name);
@@ -5133,6 +5137,7 @@ function PrototypeApp() {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [selectedSubgroup, setSelectedSubgroup] = useState<SubgroupData | null>(null);
   const [selectedExamName, setSelectedExamName] = useState<string | null>(null);
+  const [examAttendanceSubgroupLetter, setExamAttendanceSubgroupLetter] = useState<string | null>(null);
   const announcement = {
     title: "New Announcements",
     body: "Live class on Bangladesh Affairs starts tomorrow at 8 PM",
@@ -5303,7 +5308,7 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <ExamAttendanceMembersScreen onBack={goBack} />
+            <ExamAttendanceMembersScreen onBack={goBack} subgroupLetter={examAttendanceSubgroupLetter ?? undefined} />
           </motion.div>
         )}
 
@@ -5520,8 +5525,8 @@ function PrototypeApp() {
               sg={selectedSubgroup}
               override={todayGoalOverride ?? undefined}
               onBack={goBack}
-              onSelectExam={() => goTo("examAttendanceMembers")}
-              onViewAttendance={() => goTo("examAttendanceMembers")}
+              onSelectExam={() => { setExamAttendanceSubgroupLetter(todayGoalOverride ? null : selectedSubgroup.letter); goTo("examAttendanceMembers"); }}
+              onViewAttendance={() => { setExamAttendanceSubgroupLetter(todayGoalOverride ? null : selectedSubgroup.letter); goTo("examAttendanceMembers"); }}
             />
           </motion.div>
         )}
@@ -5543,7 +5548,7 @@ function PrototypeApp() {
               override={todayGoalOverride ?? undefined}
               onBack={goBack}
               onSelectExam={(exam) => { setSelectedExamName(exam.name); goTo("monthlyGoalExamDetail"); }}
-              onViewAttendance={() => goTo("examAttendanceMembers")}
+              onViewAttendance={() => { setExamAttendanceSubgroupLetter(todayGoalOverride ? null : selectedSubgroup.letter); goTo("examAttendanceMembers"); }}
             />
           </motion.div>
         )}
