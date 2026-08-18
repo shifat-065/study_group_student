@@ -4225,7 +4225,7 @@ function AttendanceSortBottomSheet({ desc, onSelect, onClose }: { desc: boolean;
 
 // ── Screen: Exam Attendance — Member list ─────────────────────────────────────
 
-function ExamAttendanceMembersScreen({ onBack, subgroupLetter }: { onBack: () => void; subgroupLetter?: string }) {
+function ExamAttendanceMembersScreen({ onBack, subgroupLetter, targetPct }: { onBack: () => void; subgroupLetter?: string; targetPct?: number }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
@@ -4235,7 +4235,20 @@ function ExamAttendanceMembersScreen({ onBack, subgroupLetter }: { onBack: () =>
 
   // Reached from a specific subgroup's Today's/Monthly Goal, only that subgroup's members
   // should appear here — otherwise (the admin's own group-level entry) it's the whole group.
-  const pool = subgroupLetter ? MEMBER_LIST.filter(m => m.subgroup === subgroupLetter) : MEMBER_LIST;
+  const scoped = subgroupLetter ? MEMBER_LIST.filter(m => m.subgroup === subgroupLetter) : MEMBER_LIST;
+  // Scale each member's shown attendance so the scoped group's average matches that goal's
+  // own percentage (e.g. Monthly Goal at 33% shows member rows averaging 33%, not the
+  // members' raw overall pct).
+  const pool = (() => {
+    if (targetPct == null || scoped.length === 0) return scoped;
+    const currentAvg = scoped.reduce((s, m) => s + m.pct, 0) / scoped.length;
+    if (currentAvg === 0) return scoped;
+    const scale = targetPct / currentAvg;
+    return scoped.map(m => {
+      const pct = Math.min(100, Math.max(0, Math.round(m.pct * scale * 10) / 10));
+      return { ...m, pct, chip: pctToChip(pct) };
+    });
+  })();
 
   const filtered = (query.trim() ? pool.filter(m => m.name.toLowerCase().includes(query.trim().toLowerCase())) : pool)
     .slice()
@@ -5189,6 +5202,7 @@ function PrototypeApp() {
   const [selectedSubgroup, setSelectedSubgroup] = useState<SubgroupData | null>(null);
   const [selectedExamName, setSelectedExamName] = useState<string | null>(null);
   const [examAttendanceSubgroupLetter, setExamAttendanceSubgroupLetter] = useState<string | null>(null);
+  const [examAttendanceTargetPct, setExamAttendanceTargetPct] = useState<number | null>(null);
   const announcement = {
     title: "New Announcements",
     body: "Live class on Bangladesh Affairs starts tomorrow at 8 PM",
@@ -5359,7 +5373,7 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <ExamAttendanceMembersScreen onBack={goBack} subgroupLetter={examAttendanceSubgroupLetter ?? undefined} />
+            <ExamAttendanceMembersScreen onBack={goBack} subgroupLetter={examAttendanceSubgroupLetter ?? undefined} targetPct={examAttendanceTargetPct ?? undefined} />
           </motion.div>
         )}
 
@@ -5576,8 +5590,8 @@ function PrototypeApp() {
               sg={selectedSubgroup}
               override={todayGoalOverride ?? undefined}
               onBack={goBack}
-              onSelectExam={() => { setExamAttendanceSubgroupLetter(todayGoalOverride ? null : selectedSubgroup.letter); goTo("examAttendanceMembers"); }}
-              onViewAttendance={() => { setExamAttendanceSubgroupLetter(todayGoalOverride ? null : selectedSubgroup.letter); goTo("examAttendanceMembers"); }}
+              onSelectExam={() => { setExamAttendanceSubgroupLetter(todayGoalOverride ? null : selectedSubgroup.letter); setExamAttendanceTargetPct(todayGoalOverride ? null : selectedSubgroup.goalPct); goTo("examAttendanceMembers"); }}
+              onViewAttendance={() => { setExamAttendanceSubgroupLetter(todayGoalOverride ? null : selectedSubgroup.letter); setExamAttendanceTargetPct(todayGoalOverride ? null : selectedSubgroup.goalPct); goTo("examAttendanceMembers"); }}
             />
           </motion.div>
         )}
@@ -5599,7 +5613,7 @@ function PrototypeApp() {
               override={todayGoalOverride ?? undefined}
               onBack={goBack}
               onSelectExam={(exam) => { setSelectedExamName(exam.name); goTo("monthlyGoalExamDetail"); }}
-              onViewAttendance={() => { setExamAttendanceSubgroupLetter(todayGoalOverride ? null : selectedSubgroup.letter); goTo("examAttendanceMembers"); }}
+              onViewAttendance={() => { setExamAttendanceSubgroupLetter(todayGoalOverride ? null : selectedSubgroup.letter); setExamAttendanceTargetPct(todayGoalOverride ? null : selectedSubgroup.monthlyGoalPct); goTo("examAttendanceMembers"); }}
             />
           </motion.div>
         )}
