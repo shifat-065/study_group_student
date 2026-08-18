@@ -2315,7 +2315,7 @@ function FacebookGroupScreen({ group, onBack }: { group: Group; onBack: () => vo
 // ── Group Rank Data ────────────────────────────────────────────────────────────
 
 const RANK_GROUPS = [
-  { name: "The Winner", cat: "BCS", admin: "Subroto Howlader", date: "1 Jul 2026", isUser: true, members: 103, exams: 66, attendance: 90.5, rating: 93.7 },
+  { name: "The Winner", cat: "BCS", admin: "Subroto Howlader", date: "1 Jul 2026", isUser: true, members: 64, exams: 66, attendance: 90.5, rating: 93.7 },
   { name: "Candid", cat: "BCS", admin: "Mehedi Shammi", date: "1 Jul 2026", members: 160, exams: 90, attendance: 89.0, rating: 76.0 },
   { name: "Alpha", cat: "BCS", admin: "Mehedi Shammi", date: "1 Jul 2026", members: 142, exams: 84, attendance: 85.3, rating: 81.2 },
   { name: "Focused", cat: "BCS", admin: "Mehedi Shammi", date: "1 Jul 2026", members: 128, exams: 79, attendance: 82.7, rating: 78.4 },
@@ -2786,12 +2786,12 @@ function GroupRankContent({ monthIndex, selectedMonth }: { monthIndex: number; s
           {/* Stats */}
           <div className="flex gap-4">
             {[
-              { val: "103", label: "Members", center: false },
-              { val: `${d.attendance}%`, label: "Attendance", center: true },
-              { val: String(d.exams), label: "Exams", center: false },
-              { val: `${d.rating}%`, label: "Rating", center: true },
-            ].map(({ val, label, center }) => (
-              <div key={label} className={`flex-1 flex flex-col ${center ? "items-center" : ""}`}>
+              { val: String(MEMBER_LIST.length), label: "Members" },
+              { val: `${d.attendance}%`, label: "Attendance" },
+              { val: String(d.exams), label: "Exams" },
+              { val: `${d.rating}%`, label: "Rating" },
+            ].map(({ val, label }) => (
+              <div key={label} className="flex-1 flex flex-col items-center">
                 <p className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px]" style={ns}>{val}</p>
                 <p className="font-['Noto_Sans',sans-serif] font-normal text-[12px] text-[#787878] leading-[16px]" style={ns}>{label}</p>
               </div>
@@ -3080,12 +3080,12 @@ function pctToChip(pct: number): AttendanceChip {
 
 const SUBGROUPS = [
   { letter: "A", captain: "Atiqul Haque", members: 10, attended: 10, goalPct: 96.0, isMyGroup: true, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "B", captain: "Shajenur khatun", members: 6, attended: 3, goalPct: 50.5, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "C", captain: "Anik Mahmud", members: 8, attended: 2, goalPct: 20.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "D", captain: "🙉🙊🙈মেহেজাবীন নুসরাত স্মৃতি✨", members: 12, attended: 10, goalPct: 85.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "E", captain: "অর্থহীন জীবন", members: 6, attended: 4, goalPct: 70.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "B", captain: "রাকিবুল শেখ", members: 6, attended: 3, goalPct: 50.5, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "C", captain: "ফারহান রানা", members: 8, attended: 2, goalPct: 20.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "D", captain: "রায়হান আকরাম", members: 12, attended: 10, goalPct: 85.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "E", captain: "বায়েজিদ ইসলাম", members: 6, attended: 4, goalPct: 70.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
   { letter: "F", captain: "তাহমিনা সুলতানা", members: 6, attended: 3, goalPct: 45.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "G", captain: "রায়হান আকরাম", members: 4, attended: 4, goalPct: 92.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "G", captain: "আসাদুজ্জামান কবির", members: 4, attended: 4, goalPct: 92.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
   { letter: "H", captain: "ঐশী হক", members: 12, attended: 4, goalPct: 33.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
 ];
 
