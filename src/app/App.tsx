@@ -149,13 +149,31 @@ function AppHeader({ title, onBack, trailing }: { title: string; onBack: () => v
 
 // Generic placeholder for a member/user profile photo — used everywhere a member list or
 // post feed would otherwise show a picture, since no real avatar photos are available yet.
-function MemberAvatar({ size = 30, className, style }: { size?: number; className?: string; style?: React.CSSProperties }) {
+// Distinct background colors so avatars read as different people at a glance, instead of
+// every member sharing the same generic gray silhouette.
+const AVATAR_PALETTE = ["#f97316", "#eab308", "#22c55e", "#14b8a6", "#3b82f6", "#6366f1", "#a855f7", "#ec4899", "#ef4444", "#0ea5e9"];
+
+function MemberAvatar({ size = 30, className, style, name }: { size?: number; className?: string; style?: React.CSSProperties; name?: string }) {
+  if (!name) {
+    return (
+      <div
+        className={clsx("rounded-full shrink-0 bg-[#e6e6e6] flex items-center justify-center overflow-hidden", className)}
+        style={{ width: size, height: size, ...style }}
+      >
+        <User className="text-[#9a9a9a]" style={{ width: size * 0.58, height: size * 0.58 }} strokeWidth={1.75} />
+      </div>
+    );
+  }
+  const trimmed = name.trim();
+  const initial = /[a-zA-Z]/.test(trimmed[0] ?? "") ? trimmed[0].toUpperCase() : (trimmed[0] ?? "?");
+  const hash = trimmed.split("").reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 0);
+  const bg = AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
   return (
     <div
-      className={clsx("rounded-full shrink-0 bg-[#e6e6e6] flex items-center justify-center overflow-hidden", className)}
-      style={{ width: size, height: size, ...style }}
+      className={clsx("rounded-full shrink-0 flex items-center justify-center overflow-hidden", className)}
+      style={{ width: size, height: size, backgroundColor: bg, ...style }}
     >
-      <User className="text-[#9a9a9a]" style={{ width: size * 0.58, height: size * 0.58 }} strokeWidth={1.75} />
+      <span className="font-['Noto_Sans',sans-serif] font-medium text-white leading-none" style={{ fontSize: size * 0.44 }}>{initial}</span>
     </div>
   );
 }
@@ -2064,7 +2082,7 @@ function DiscussionScreen({ onBack }: { onBack: () => void }) {
             <div key={post.id} className="bg-[#f4f6fa] rounded-[12px] p-3 flex flex-col gap-3">
               {/* Header */}
               <div className="flex items-center gap-2">
-                <MemberAvatar size={36} />
+                <MemberAvatar size={36} name={post.name} />
                 <div className="flex-1 min-w-0">
                   <p className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-[20px] truncate" style={ns}>
                     {post.name}
@@ -2245,7 +2263,7 @@ function FacebookGroupScreen({ group, onBack }: { group: Group; onBack: () => vo
           {FB_POSTS.map(post => (
             <div key={post.id} className="px-4 py-3 flex flex-col gap-3 border-b-8 border-[#f0f2f5]">
               <div className="flex items-center gap-2">
-                <MemberAvatar size={40} />
+                <MemberAvatar size={40} name={post.name} />
                 <div className="flex-1 min-w-0">
                   <p className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-[20px] truncate" style={ns}>
                     {post.name}
@@ -3200,7 +3218,7 @@ function MemberDetailSheet({ member, onClose, hideContactRow }: { member: Member
 
         <div className="flex-1 overflow-y-auto flex flex-col gap-6 pb-6">
           <div className="flex gap-6 items-start px-4">
-            <MemberAvatar size={80} />
+            <MemberAvatar size={80} name={member.name} />
             <div className="flex-1 min-w-0 flex flex-col gap-2">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
@@ -3417,7 +3435,7 @@ function GroupMembersScreen({ onBack, group }: { onBack: () => void; group: Grou
               >
                 {/* Avatar + name */}
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <MemberAvatar size={30} />
+                  <MemberAvatar size={30} name={member.name} />
                   <span
                     className="flex-1 font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-[24px] truncate"
                     style={ns}
@@ -3706,7 +3724,7 @@ function CaptainDetailsBottomSheet({ sg, onClose }: { sg: SubgroupData; onClose:
         <div className="border-t border-[#e3e3e3]" />
 
         <div className="flex items-center gap-3 p-4">
-          <MemberAvatar size={56} />
+          <MemberAvatar size={56} name={sg.captain} />
           <div className="flex flex-col gap-1 min-w-0">
             <p className="font-['Noto_Sans',sans-serif] font-medium text-[18px] text-black leading-[26px] truncate" style={ns}>{sg.captain}</p>
             <div className="flex items-center gap-1.5">
@@ -3948,7 +3966,7 @@ function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal }: { onBa
                     className="w-full flex items-center justify-between px-4 py-3 bg-white active:bg-gray-50 transition-colors text-left"
                   >
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <MemberAvatar size={30} />
+                      <MemberAvatar size={30} name={member.name} />
                       <span
                         className="flex-1 font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-[24px] truncate"
                         style={ns}
@@ -4234,7 +4252,7 @@ function ExamAttendanceMembersScreen({ onBack }: { onBack: () => void }) {
                     className="w-full flex items-center justify-between py-3 active:bg-gray-50 transition-colors text-left"
                   >
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <MemberAvatar size={30} />
+                      <MemberAvatar size={30} name={member.name} />
                       <span
                         className="flex-1 font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-[24px] truncate"
                         style={ns}
@@ -4432,7 +4450,7 @@ function MonthlyGoalExamDetailScreen({ examName, onBack }: { examName: string; o
                     className="w-full flex items-center justify-between py-3 active:bg-gray-50 transition-colors text-left"
                   >
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <MemberAvatar size={30} />
+                      <MemberAvatar size={30} name={member.name} />
                       <span className="flex-1 font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-6 truncate" style={ns}>
                         {member.name}
                       </span>
