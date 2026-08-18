@@ -3446,6 +3446,7 @@ function GroupMembersScreen({ onBack, group }: { onBack: () => void; group: Grou
                 {/* Subgroup + attendance percentage */}
                 <div className="flex items-center gap-1 shrink-0 ml-2">
                   <SubgroupTag letter={member.subgroup} />
+                  <RatingBadge letter={member.rating} />
                   {/* Attendance chip — same design as the percentage chip in the Available Groups list */}
                   <div
                     className="rounded-[4px] h-6 px-2 flex items-center justify-center shrink-0"
@@ -4262,6 +4263,7 @@ function ExamAttendanceMembersScreen({ onBack }: { onBack: () => void }) {
                     </div>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
                       <SubgroupTag letter={member.subgroup} />
+                      <RatingBadge letter={member.rating} />
                       <div className="rounded-[16px] h-6 px-3 flex items-center justify-center shrink-0" style={{ backgroundColor: chip.bg }}>
                         <span
                           className="font-['Noto_Sans',sans-serif] font-medium text-[12px] leading-[16px]"
@@ -4457,6 +4459,7 @@ function MonthlyGoalExamDetailScreen({ examName, onBack }: { examName: string; o
                     </div>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
                       <SubgroupTag letter={member.subgroup} />
+                      <RatingBadge letter={member.rating} />
                       <div className="rounded-[4px] h-6 px-2 flex items-center justify-center shrink-0" style={{ backgroundColor: chip.bg }}>
                         <span className="font-['Noto_Sans',sans-serif] text-[12px] font-normal" style={{ color: chip.text }}>{member.pct.toFixed(1)}%</span>
                       </div>
