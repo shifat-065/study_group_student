@@ -4033,7 +4033,7 @@ function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal }: { onBa
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
-                      <RatingBadge letter={member.rating} />
+                      <RatingBadge letter={sg.letter} />
                       <div className="rounded-[16px] px-3 py-1 shrink-0" style={{ backgroundColor: chip.bg }}>
                         <span
                           className="font-['Noto_Sans',sans-serif] font-medium text-[12px] leading-[16px]"
@@ -4336,7 +4336,7 @@ function ExamAttendanceMembersScreen({ onBack, subgroupLetter, targetPct }: { on
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
-                      <RatingBadge letter={member.rating} />
+                      <RatingBadge letter={subgroupLetter ?? member.rating} />
                       <div className="rounded-[16px] h-6 px-3 flex items-center justify-center shrink-0" style={{ backgroundColor: chip.bg }}>
                         <span
                           className="font-['Noto_Sans',sans-serif] font-medium text-[12px] leading-[16px]"
@@ -4552,7 +4552,7 @@ function MonthlyGoalExamDetailScreen({ examName, sg, override, examTotals, onBac
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
-                      <RatingBadge letter={member.rating} />
+                      <RatingBadge letter={override ? member.rating : sg.letter} />
                       <div className="rounded-[4px] h-6 px-2 flex items-center justify-center shrink-0" style={{ backgroundColor: chip.bg }}>
                         <span className="font-['Noto_Sans',sans-serif] text-[12px] font-normal" style={{ color: chip.text }}>{member.pct.toFixed(1)}%</span>
                       </div>
