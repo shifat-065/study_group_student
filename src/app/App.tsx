@@ -86,7 +86,7 @@ const EXAMS: Record<string, Array<{ name: string; isLive: boolean }>> = {
     { name: "ব্যাংক নিয়োগ প্রস্তুতি - লং কোর্স", isLive: false },
     { name: "২০২২ সাল ভিত্তিক সিনিয়র অফিসার নিয়োগ প্রস্তুতি", isLive: true },
     { name: "ব্যাংক ডেইলি কুইজ", isLive: false },
-    { name: "ব্যাংক মডেল টেস্ট [সাপ্তাহিক]", isLive: true },
+    { name: "মাসিক মডেল টেস্ট [পরিপূর্ণ সিলেবাস]", isLive: true },
   ],
   Bank: [
     { name: "Bank Job Preparation - 1st Phase", isLive: false },
@@ -472,7 +472,7 @@ const MANDATORY_EXAMS: Array<{ name: string; isLive: boolean }> = [
   { name: "ব্যাংক নিয়োগ প্রস্তুতি - লং কোর্স", isLive: false },
   { name: "২০২২ সাল ভিত্তিক সিনিয়র অফিসার নিয়োগ প্রস্তুতি", isLive: true },
   { name: "ব্যাংক ডেইলি কুইজ", isLive: false },
-  { name: "ব্যাংক মডেল টেস্ট [সাপ্তাহিক]", isLive: true },
+  { name: "মাসিক মডেল টেস্ট [পরিপূর্ণ সিলেবাস]", isLive: true },
 ];
 
 const QUICK_LINKS: Array<{ id: string; label: string; Icon: LucideIcon }> = [
@@ -2371,16 +2371,26 @@ const DAILY_GOAL_PCTS = [
 // fixed schedule — but stays the same every time you open that exam's own screen, seeded
 // off its name so it doesn't reshuffle on every render.
 function examChartPcts(examName: string): number[] {
+  const n = DAILY_GOAL_PCTS.length;
   if (examName.includes("সাপ্তাহিক")) {
+    // Weekly exam lands on the same weekday every time (every 7th day) — that's exactly
+    // MONTHLY_EXAM_OCCURRENCES' weekly count (4) across a 31-day chart.
     return DAILY_GOAL_PCTS.map((pct, i) => (i % 7 === 6 ? pct : 0));
   }
+  // Active-day count matches this exam's real monthly occurrence count (23 for a daily exam,
+  // 1 for the monthly exam) — not a flat ~60%-of-days probability applied to every exam.
+  const idx = MONTHLY_EXAM_LIST.findIndex(e => e.name === examName);
+  const count = idx >= 0 ? MONTHLY_EXAM_OCCURRENCES[idx] : Math.round(n * 0.6);
+
   let seed = 0;
   for (let i = 0; i < examName.length; i++) seed = (seed * 31 + examName.charCodeAt(i)) >>> 0;
-  return DAILY_GOAL_PCTS.map((pct, i) => {
-    const x = Math.sin(seed + i * 97.13) * 10000;
-    const rand = x - Math.floor(x);
-    return rand < 0.6 ? pct : 0;
-  });
+  const rand = (k: number) => {
+    const x = Math.sin(seed + k * 97.13) * 10000;
+    return x - Math.floor(x);
+  };
+  const order = Array.from({ length: n }, (_, i) => i).sort((a, b) => rand(a) - rand(b));
+  const active = new Set(order.slice(0, Math.min(count, n)));
+  return DAILY_GOAL_PCTS.map((pct, i) => (active.has(i) ? pct : 0));
 }
 
 type RankSort = "attendance" | "position" | "name" | "memberCount";
@@ -3507,7 +3517,7 @@ const EXAM_LIST: ExamListItem[] = [
   { name: "ফ্রি সাপ্তাহিক মডেল টেস্ট", attended: 8, total: MEMBER_LIST.length },
   { name: "গুরুত্বপূর্ণ টপিকের উপর পরীক্ষা", attended: 10, total: MEMBER_LIST.length },
   { name: "২০২২ সাল ভিত্তিক সিনিয়র অফিসার নিয়োগ প্রস্তুতি", attended: 7, total: MEMBER_LIST.length },
-  { name: "ব্যাংক মডেল টেস্ট [সাপ্তাহিক]", attended: 4, total: MEMBER_LIST.length },
+  { name: "মাসিক মডেল টেস্ট [পরিপূর্ণ সিলেবাস]", attended: 4, total: MEMBER_LIST.length },
 ];
 
 // Monthly Goal shows the full mandatory-exam list (Today's Goal only shows a trimmed 4).
@@ -3518,8 +3528,13 @@ const MONTHLY_EXAM_LIST: ExamListItem[] = [
   { name: "ব্যাংক নিয়োগ প্রস্তুতি - লং কোর্স", attended: 5, total: MEMBER_LIST.length },
   { name: "২০২২ সাল ভিত্তিক সিনিয়র অফিসার নিয়োগ প্রস্তুতি", attended: 7, total: MEMBER_LIST.length },
   { name: "ব্যাংক ডেইলি কুইজ", attended: 9, total: MEMBER_LIST.length },
-  { name: "ব্যাংক মডেল টেস্ট [সাপ্তাহিক]", attended: 4, total: MEMBER_LIST.length },
+  { name: "মাসিক মডেল টেস্ট [পরিপূর্ণ সিলেবাস]", attended: 4, total: MEMBER_LIST.length },
 ];
+
+// Real monthly occurrence count per exam in MONTHLY_EXAM_LIST (same order): the weekly exam
+// runs ~4×/month, the monthly exam runs 1×/month, and the 5 daily exams split the remaining
+// 115 of the 120 total monthly slots-per-member (EXAM_LIST.length × 30) evenly at 23 each.
+const MONTHLY_EXAM_OCCURRENCES = [4, 23, 23, 23, 23, 23, 1];
 
 type GoalMode = "today" | "monthly";
 
@@ -3528,7 +3543,7 @@ type GoalMode = "today" | "monthly";
 // each subgroup's own attended (from its goalPct) added up, and the percentage is derived
 // from that sum — never set independently.
 function computeGroupGoalAggregate(subgroups: SubgroupData[], mode: GoalMode): GoalDetailOverride {
-  const perMember = mode === "today" ? EXAM_LIST.length : 5 * 30;
+  const perMember = mode === "today" ? EXAM_LIST.length : EXAM_LIST.length * 30;
   let bigCount = 0, attended = 0;
   for (const sg of subgroups) {
     const total = sg.members * perMember;
@@ -3568,33 +3583,53 @@ function GoalDetailScreen({ mode, sg, onBack, onSelectExam, onViewAttendance, ov
     goalPct = override.goalPct;
   } else {
     const memberCount = sg.members;
-    // Today's total is a single day's worth of exams (member count × today's exam count).
-    // Monthly's total is a genuine month-scale aggregate — roughly 30 days at a typical
-    // daily rate of ~5 exams per member — so it's always meaningfully larger than any one
-    // day's total (e.g. 10 members × 5 × 30 = 1500, well above a ~40-60 daily range).
-    bigCount = mode === "today" ? memberCount * examList.length : memberCount * 5 * 30;
+    // Today's total is a single day's worth of exams (member count × today's 4-exam slate).
+    // Monthly's total is the real monthly must-have capacity per member: EXAM_LIST.length × 30
+    // days (120), matching MONTHLY_EXAM_OCCURRENCES' sum (4 + 23×5 + 1 = 120) — not a flat
+    // "5 exams/day" guess.
+    bigCount = mode === "today" ? memberCount * examList.length : memberCount * EXAM_LIST.length * 30;
     goalPct = mode === "today" ? sg.goalPct : sg.monthlyGoalPct;
     attended = Math.round(bigCount * goalPct / 100);
     remaining = Math.max(bigCount - attended, 0);
   }
 
-  // Every row's total is the same fixed number (one exam attempt per member — bigCount / n,
-  // which divides evenly for Today's goal since bigCount = memberCount × n) — real exam
-  // totals per member don't vary row to row. Only attended varies per row (weighted, so
-  // it doesn't look like a flat percentage repeated on every button), and both the row
-  // totals and the row attended counts still sum exactly to the numbers in the summary
-  // card above.
   const n = examList.length;
-  const baseTotal = Math.floor(bigCount / n);
-  const totalRemainder = bigCount - baseTotal * n;
-  const rowTotals = Array.from({ length: n }, (_, i) => baseTotal + (i < totalRemainder ? 1 : 0));
+  // Today's goal: all 4 exams run daily, so rows split bigCount evenly. Monthly goal: rows
+  // split by each exam's real occurrence count (MONTHLY_EXAM_OCCURRENCES) — the weekly exam's
+  // row is far smaller than the daily exams' rows, not an even 1/7th each. Leftover units from
+  // flooring go to the highest-weight (most frequent) rows first.
+  const occurrenceWeights = mode === "monthly" ? MONTHLY_EXAM_OCCURRENCES : undefined;
+  let rowTotals: number[];
+  if (occurrenceWeights) {
+    const weightSum = occurrenceWeights.reduce((a, b) => a + b, 0);
+    const raw = occurrenceWeights.map(w => (bigCount * w) / weightSum);
+    const floors = raw.map(Math.floor);
+    const used = floors.reduce((a, b) => a + b, 0);
+    const remainder = bigCount - used;
+    const order = raw
+      .map((v, i) => ({ i, frac: v - floors[i], w: occurrenceWeights[i] }))
+      .sort((a, b) => b.w - a.w || b.frac - a.frac);
+    rowTotals = [...floors];
+    for (let k = 0; k < remainder; k++) rowTotals[order[k].i] += 1;
+  } else {
+    const baseTotal = Math.floor(bigCount / n);
+    const totalRemainder = bigCount - baseTotal * n;
+    rowTotals = Array.from({ length: n }, (_, i) => baseTotal + (i < totalRemainder ? 1 : 0));
+  }
 
-  const weights = Array.from({ length: n }, (_, i) => 0.65 + ((i * 53 + 17) % 71) / 100);
-  const rowAttendedRaw = rowTotals.map((t, i) => Math.min(t, Math.round(t * goalPct * weights[i] / 100)));
+  // Only attended varies row to row (weighted, so it doesn't look like a flat percentage
+  // repeated on every button) — both the row totals and the row attended counts still sum
+  // exactly to the numbers in the summary card above.
+  const attendedWeights = Array.from({ length: n }, (_, i) => 0.65 + ((i * 53 + 17) % 71) / 100);
+  const rowAttendedRaw = rowTotals.map((t, i) => Math.min(t, Math.round(t * goalPct * attendedWeights[i] / 100)));
   const rowAttendedSum = rowAttendedRaw.reduce((a, b) => a + b, 0);
   let attendedDiff = attended - rowAttendedSum;
   const rowAttended = [...rowAttendedRaw];
-  for (let i = 0; attendedDiff !== 0 && i < n * 4; i++) {
+  // Budget sized to the actual gap (not a small fixed constant) — with weighted, non-mean-1
+  // row estimates, the gap scales with bigCount, and near 0%/100% most rows saturate so a
+  // single free row may need to absorb the whole gap alone (one nudge per n-iteration lap).
+  const nudgeBudget = Math.abs(attendedDiff) * n + n;
+  for (let i = 0; attendedDiff !== 0 && i < nudgeBudget; i++) {
     const idx = i % n;
     if (attendedDiff > 0 && rowAttended[idx] < rowTotals[idx]) { rowAttended[idx]++; attendedDiff--; }
     else if (attendedDiff < 0 && rowAttended[idx] > 0) { rowAttended[idx]--; attendedDiff++; }
@@ -3851,9 +3886,9 @@ function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal }: { onBa
   const goalChipColor = pctChipStyle(sg.goalPct);
   const todayTotal = EXAM_LIST.length * sg.members;
   const todayAttended = Math.round(todayTotal * sg.goalPct / 100);
-  // Monthly total is a month-scale aggregate (see GoalDetailScreen), not the exam-type row
-  // count, so it's always meaningfully larger than a single day's total.
-  const monthTotal = sg.members * 5 * 30;
+  // Monthly total is the real monthly must-have capacity per member: EXAM_LIST.length × 30
+  // (120), matching GoalDetailScreen and MONTHLY_EXAM_OCCURRENCES' sum.
+  const monthTotal = sg.members * EXAM_LIST.length * 30;
   const monthAttended = Math.round(monthTotal * sg.monthlyGoalPct / 100);
   const todayPct = sg.goalPct;
   const monthPct = sg.monthlyGoalPct;
@@ -4428,7 +4463,8 @@ function MonthlyGoalExamDetailScreen({ examName, sg, override, examTotals, onBac
   // Group-level entry (override set) shows the whole group. Reached by tapping a specific
   // exam row from a subgroup's Monthly Goal, examTotals carries that row's own total/attended
   // (matching the number the user just tapped) instead of a separately recomputed figure.
-  const monthTotal = examTotals ? examTotals.total : override ? override.bigCount : sg.members * 4;
+  const examOccurrences = MONTHLY_EXAM_OCCURRENCES[MONTHLY_EXAM_LIST.findIndex(e => e.name === examName)] ?? 23;
+  const monthTotal = examTotals ? examTotals.total : override ? override.bigCount : sg.members * examOccurrences;
   const monthAttended = examTotals ? examTotals.attended : override ? override.attended : Math.round(monthTotal * sg.monthlyGoalPct / 100);
   const monthRemaining = Math.max(monthTotal - monthAttended, 0);
   const monthBarPct = monthTotal > 0 ? (monthAttended / monthTotal) * 100 : 0;
@@ -5366,7 +5402,17 @@ function PrototypeApp() {
             transition={slideTrans}
             className="absolute inset-0"
           >
-            <GroupListScreen onBack={goBack} onSelectGroup={(group) => { setSelectedGroup(group); goTo("joinGroup"); }} />
+            <GroupListScreen onBack={goBack} onSelectGroup={(group) => {
+              // "The Winner" (id 1) is the real 64-member roster this app knows about — its
+              // avgAttendance is overridden with the real mean of MEMBER_LIST's own attendance
+              // percentages instead of the stored fictional placeholder. Other browsable groups
+              // have no backing roster here, so their stats are left as-is.
+              const withRealAvg = group.id === 1
+                ? { ...group, avgAttendance: MEMBER_LIST.reduce((s, m) => s + m.pct, 0) / MEMBER_LIST.length }
+                : group;
+              setSelectedGroup(withRealAvg);
+              goTo("joinGroup");
+            }} />
           </motion.div>
         )}
 
