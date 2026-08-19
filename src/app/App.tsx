@@ -2567,23 +2567,25 @@ function MonthPickerModal({
 }) {
   const today = new Date();
   today.setDate(1);
+  // Latest selectable month is last month — current month has no data yet.
+  const maxDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
   // allow up to 24 months back
   const minDate = new Date(today.getFullYear(), today.getMonth() - 23, 1);
   // Reset goes back to the default selection: last month.
-  const defaultMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const defaultMonth = maxDate;
 
   const [viewYear, setViewYear] = useState(selectedMonth.getFullYear());
 
   function isDisabled(mIdx: number) {
     const d = new Date(viewYear, mIdx, 1);
-    return d > today || d < minDate;
+    return d > maxDate || d < minDate;
   }
   function isSelected(mIdx: number) {
     return viewYear === selectedMonth.getFullYear() && mIdx === selectedMonth.getMonth();
   }
 
   const canPrevYear = new Date(viewYear - 1, 11, 1) >= minDate;
-  const canNextYear = new Date(viewYear + 1, 0, 1) <= today;
+  const canNextYear = new Date(viewYear + 1, 0, 1) <= maxDate;
 
   return (
     <motion.div
