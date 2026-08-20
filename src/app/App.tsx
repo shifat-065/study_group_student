@@ -4645,30 +4645,9 @@ function ExamAttendMembersScreen({ examName, attended, onBack, subgroupLetter }:
   );
 }
 
-// Small donut used for "Monthly Attendance (Estimated)" — track + a filled arc for pct.
-function CircularProgress({ pct, size = 69 }: { pct: number; size?: number }) {
-  const stroke = 6;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const offset = c * (1 - pct / 100);
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} stroke="#d6e4ff" strokeWidth={stroke} fill="none" />
-        <circle
-          cx={size / 2} cy={size / 2} r={r}
-          stroke="#1441cc" strokeWidth={stroke} fill="none"
-          strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round"
-        />
-      </svg>
-      <span className="absolute inset-0 flex items-center justify-center font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black">{pct}%</span>
-    </div>
-  );
-}
-
-// Reached by tapping a mandatory exam from the admin's Monthly Goal screen — richer than the
-// Today's Goal exam view: live-exam stats + a monthly attendance donut + the 31-day goal chart,
-// then a member list sorted/searched like Group Members (tap a row for the same detail sheet).
+// Reached by tapping a mandatory exam from the Monthly Goal screen — live-exam stats for
+// that exam, then a member list sorted/searched like Group Members (tap a row for the same
+// detail sheet), scaled so the list average matches this exam's own percentage.
 function MonthlyGoalExamDetailScreen({ examName, sg, override, examTotals, onBack }: { examName: string; sg: SubgroupData; override?: GoalDetailOverride; examTotals?: { total: number; attended: number }; onBack: () => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [searching, setSearching] = useState(false);
@@ -4683,13 +4662,10 @@ function MonthlyGoalExamDetailScreen({ examName, sg, override, examTotals, onBac
   const examOccurrences = MONTHLY_EXAM_OCCURRENCES[MONTHLY_EXAM_LIST.findIndex(e => e.name === examName)] ?? 23;
   const monthTotal = examTotals ? examTotals.total : override ? override.bigCount : sg.members * examOccurrences;
   const monthAttended = examTotals ? examTotals.attended : override ? override.attended : Math.round(monthTotal * sg.monthlyGoalPct / 100);
+  const goalPct = monthTotal > 0 ? (monthAttended / monthTotal) * 100 : 0;
   const monthRemaining = Math.max(monthTotal - monthAttended, 0);
-  const monthBarPct = monthTotal > 0 ? (monthAttended / monthTotal) * 100 : 0;
-  const chartPcts = examChartPcts(examName);
-  // Achievement ratio is the average of this exam's own active-day chart bars, not the
-  // Live Exams card's percentage — the two are independent numbers on this screen.
-  const activeChartPcts = chartPcts.filter(pct => pct > 0);
-  const chartAchievementRatio = activeChartPcts.length > 0 ? activeChartPcts.reduce((a, b) => a + b, 0) / activeChartPcts.length : 0;
+  const monthBarPct = goalPct;
+
   const scopedMembers = override ? MEMBER_LIST : MEMBER_LIST.filter(m => m.subgroup === sg.letter);
   // Scale each member's shown attendance so the scoped group's average matches this exam's
   // own percentage, instead of the members' unrelated raw overall pct.
@@ -4697,7 +4673,7 @@ function MonthlyGoalExamDetailScreen({ examName, sg, override, examTotals, onBac
     if (scopedMembers.length === 0) return scopedMembers;
     const currentAvg = scopedMembers.reduce((s, m) => s + m.pct, 0) / scopedMembers.length;
     if (currentAvg === 0) return scopedMembers;
-    const scale = monthBarPct / currentAvg;
+    const scale = goalPct / currentAvg;
     return scopedMembers.map(m => {
       const pct = Math.min(100, Math.max(0, Math.round(m.pct * scale * 10) / 10));
       return { ...m, pct, chip: pctToChip(pct) };
@@ -4726,7 +4702,7 @@ function MonthlyGoalExamDetailScreen({ examName, sg, override, examTotals, onBac
 
       {searching ? (
         <InlineSearchHeader
-          title={examName}
+          title="Member attendance"
           onBack={onBack}
           searching
           onStartSearch={() => { }}
@@ -4736,66 +4712,57 @@ function MonthlyGoalExamDetailScreen({ examName, sg, override, examTotals, onBac
           placeholder="Search by name"
         />
       ) : (
-        <AppHeader title={examName} onBack={onBack} />
+        <div className="shrink-0 flex items-start gap-2 px-1 pt-1 pb-2">
+          <button
+            onClick={onBack}
+            className="size-12 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors shrink-0"
+          >
+            <ArrowLeft className="size-6 text-[#484848]" strokeWidth={2} />
+          </button>
+          <div className="flex-1 flex flex-col pt-3 min-w-0">
+            <p className="font-['Noto_Sans',sans-serif] font-normal text-[20px] text-black leading-[28px] truncate" style={ns}>
+              Exam Attendance
+            </p>
+            <p className="font-['Noto_Sans',sans-serif] font-normal text-[13px] text-[#484848] leading-[18px] truncate" style={ns}>
+              {examName}
+            </p>
+          </div>
+        </div>
       )}
 
       <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col gap-4 px-4 pt-4 pb-8">
           {!searching && (
             <>
-              {/* Live exams + monthly attendance donut */}
-              <div className="flex gap-2">
-                <div className="flex-1 border border-[#e3e3e3] rounded-[12px] p-3 flex flex-col gap-2">
-                  <span className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#787878] leading-4" style={ns}>Live Exams (Estimated)</span>
-                  <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-6" style={ns}>{monthTotal}</span>
-                  <ActivityProgressBar pct={monthBarPct} />
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <div className="size-2 rounded-full bg-[#1441cc] shrink-0" />
-                      <span className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#787878] leading-4" style={ns}>Attended</span>
-                    </div>
+              {/* Live exams summary */}
+              <div className="border border-[#e3e3e3] rounded-[12px] p-3 flex flex-col gap-3">
+                <div className="flex items-center justify-between w-full">
+                  <span className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#484848] leading-[20px]" style={ns}>Live Exams (Estimated)</span>
+                  <div className="rounded-[4px] px-2 h-5 flex items-center" style={{ backgroundColor: pctChipStyle(goalPct).bg }}>
+                    <span className="font-['Noto_Sans',sans-serif] font-normal text-[12px] leading-[16px]" style={{ ...ns, color: pctChipStyle(goalPct).text }}>
+                      {goalPct.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+                <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-6" style={ns}>{monthTotal}</span>
+                <ActivityProgressBar pct={monthBarPct} />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <div className="size-2 rounded-full bg-[#1441cc] shrink-0" />
+                    <span className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#787878] leading-4" style={ns}>Attended:</span>
                     <span className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-black leading-4" style={ns}>{monthAttended}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <div className="size-2 rounded-full bg-[#d6e4ff] shrink-0" />
-                      <span className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#787878] leading-4" style={ns}>Remaining (Est)</span>
-                    </div>
+                  <div className="flex items-center gap-1">
+                    <div className="size-2 rounded-full bg-[#d6e4ff] shrink-0" />
+                    <span className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#787878] leading-4" style={ns}>Remaining (Est):</span>
                     <span className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-black leading-4" style={ns}>{monthRemaining}</span>
                   </div>
                 </div>
-                <div className="flex-1 border border-[#e3e3e3] rounded-[12px] p-3 flex flex-col items-center justify-center gap-3">
-                  <CircularProgress pct={80} />
-                  <span className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#787878] leading-4 text-center" style={ns}>Monthly Attendance (Estimated)</span>
-                </div>
               </div>
 
-              {/* Monthly goal chart */}
-              <div className="bg-[#f4f6fa] rounded-[16px] p-3 flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5" style={ns}>Monthly goal</span>
-                  <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5" style={ns}>5.6 K</span>
-                </div>
-                <div className="grid gap-x-1 h-[100px] items-end" style={{ gridTemplateColumns: `repeat(${chartPcts.length}, minmax(0, 1fr))` }}>
-                  {chartPcts.map((pct, i) => (
-                    <div key={i} className="relative h-full w-full rounded-full overflow-hidden bg-[#e3e3e3]">
-                      {pct > 0 && (
-                        <div className="absolute bottom-0 left-0 right-0 rounded-full" style={{ height: `${pct}%`, backgroundColor: zoneBarColor(pct) }} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between">
-                  {[1, 10, 20, chartPcts.length].map(day => (
-                    <span key={day} className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#8f8d8d] leading-4" style={ns}>{day}</span>
-                  ))}
-                </div>
-                <span className="text-center font-['Noto_Sans',sans-serif] font-medium text-[12px] text-black leading-4" style={ns}>{chartAchievementRatio.toFixed(1)}% achievement ratio</span>
-              </div>
-
-              {/* Attendance header */}
+              {/* Member attendance header */}
               <div className="flex items-center justify-between">
-                <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-6" style={ns}>Attendance</span>
+                <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black tracking-[0.15px] leading-6" style={ns}>Member attendance</span>
                 <div className="flex items-center">
                   <button
                     onClick={() => setSearching(true)}
