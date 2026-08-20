@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft, ChevronDown, Check, Info, AlertCircle,
   UserPlus, Search, ArrowUpDown, ChevronRight,
-  ThumbsUp, MessageCircle, Share2, Send, Globe, MoreHorizontal, ImageIcon, Star, User, Users,
+  ThumbsUp, MessageCircle, Share2, Send, Globe, MoreHorizontal, ImageIcon, Star, User,
   CalendarDays, Archive, ClipboardCheck, Trophy, FileText, Pencil, X, Gift, Headphones, Sprout,
   Filter, Calendar, Clock, Award, PlaySquare, FileSpreadsheet, BarChart3,
   type LucideIcon,
@@ -174,19 +174,6 @@ function MemberAvatar({ size = 30, className, style, name }: { size?: number; cl
       style={{ width: size, height: size, backgroundColor: bg, ...style }}
     >
       <span className="font-['Noto_Sans',sans-serif] font-medium text-white leading-none" style={{ fontSize: size * 0.44 }}>{initial}</span>
-    </div>
-  );
-}
-
-// Generic placeholder for a group photo — used everywhere a group icon or cover
-// would otherwise show a picture, since no real group photos are available yet.
-function GroupAvatar({ size = 30, className, style }: { size?: number; className?: string; style?: React.CSSProperties }) {
-  return (
-    <div
-      className={clsx("rounded-full shrink-0 bg-[#e6e6e6] flex items-center justify-center overflow-hidden", className)}
-      style={{ width: size, height: size, ...style }}
-    >
-      <Users className="text-[#9a9a9a]" style={{ width: size * 0.58, height: size * 0.58 }} strokeWidth={1.75} />
     </div>
   );
 }
@@ -1650,7 +1637,7 @@ function GroupMemberScreen({ group, onBack, onActivityLog, onRank, onMembers, on
         {/* Group info card */}
         <div className="flex flex-col gap-4 px-4 py-4">
           <div className="flex gap-3 items-start">
-            <GroupAvatar size={60} />
+            <GroupLogo size={60} seed={group.id} />
             <div className="flex-1 min-w-0 flex flex-col gap-2">
               <p className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px]">{group.name}</p>
               <div className="flex flex-col gap-1">
@@ -2206,7 +2193,7 @@ function FacebookGroupScreen({ group, onBack }: { group: Group; onBack: () => vo
         {/* Cover */}
         <div className="relative h-[110px] bg-gradient-to-br from-[#0866FF] to-[#0a3ea1] shrink-0">
           <div className="absolute -bottom-7 left-4 size-[72px] rounded-full ring-4 ring-white overflow-hidden bg-white">
-            <GroupAvatar size={72} />
+            <GroupLogo size={72} seed={group.id} />
           </div>
         </div>
 
