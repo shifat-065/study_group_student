@@ -2333,27 +2333,27 @@ const RANK_GROUPS = [
 
 const MONTHLY_RANK_DATA = [
   {
-    userRank: 1, userGP: "789.6", attendance: "90.5", exams: 66, rating: "93.7", totalExams: 155, avgAttendance: "75.5", monthlyGoal: 1221, achievementRatio: "75.5",
+    userRank: 1, userGP: "789.6", attendance: "90.5", exams: 66, rating: "93.7", totalExams: 155, avgAttendance: "75.5", monthlyGoal: 1221,
     leaderboard: [{ g: 0, gp: "789.6" }, { g: 1, gp: "654.2" }, { g: 2, gp: "621.8" }, { g: 3, gp: "587.4" }, { g: 4, gp: "542.9" }, { g: 5, gp: "498.3" }, { g: 6, gp: "431.1" }, { g: 7, gp: "387.6" }]
   },
   {
-    userRank: 2, userGP: "721.3", attendance: "85.2", exams: 61, rating: "88.4", totalExams: 148, avgAttendance: "71.3", monthlyGoal: 1180, achievementRatio: "69.8",
+    userRank: 2, userGP: "721.3", attendance: "85.2", exams: 61, rating: "88.4", totalExams: 148, avgAttendance: "71.3", monthlyGoal: 1180,
     leaderboard: [{ g: 2, gp: "758.4" }, { g: 0, gp: "721.3" }, { g: 1, gp: "689.7" }, { g: 5, gp: "612.1" }, { g: 3, gp: "553.8" }, { g: 4, gp: "498.2" }, { g: 7, gp: "412.5" }, { g: 6, gp: "378.9" }]
   },
   {
-    userRank: 1, userGP: "812.1", attendance: "92.1", exams: 70, rating: "95.2", totalExams: 162, avgAttendance: "78.9", monthlyGoal: 1300, achievementRatio: "81.2",
+    userRank: 1, userGP: "812.1", attendance: "92.1", exams: 70, rating: "95.2", totalExams: 162, avgAttendance: "78.9", monthlyGoal: 1300,
     leaderboard: [{ g: 0, gp: "812.1" }, { g: 2, gp: "774.6" }, { g: 4, gp: "701.3" }, { g: 1, gp: "658.9" }, { g: 6, gp: "589.4" }, { g: 3, gp: "521.2" }, { g: 5, gp: "448.7" }, { g: 7, gp: "392.1" }]
   },
   {
-    userRank: 3, userGP: "654.2", attendance: "78.9", exams: 58, rating: "81.3", totalExams: 141, avgAttendance: "68.4", monthlyGoal: 1050, achievementRatio: "62.3",
+    userRank: 3, userGP: "654.2", attendance: "78.9", exams: 58, rating: "81.3", totalExams: 141, avgAttendance: "68.4", monthlyGoal: 1050,
     leaderboard: [{ g: 5, gp: "745.8" }, { g: 2, gp: "712.4" }, { g: 0, gp: "654.2" }, { g: 1, gp: "598.7" }, { g: 3, gp: "534.1" }, { g: 6, gp: "478.3" }, { g: 4, gp: "401.9" }, { g: 7, gp: "345.6" }]
   },
   {
-    userRank: 2, userGP: "698.5", attendance: "83.7", exams: 63, rating: "86.9", totalExams: 152, avgAttendance: "73.1", monthlyGoal: 1140, achievementRatio: "72.4",
+    userRank: 2, userGP: "698.5", attendance: "83.7", exams: 63, rating: "86.9", totalExams: 152, avgAttendance: "73.1", monthlyGoal: 1140,
     leaderboard: [{ g: 1, gp: "734.2" }, { g: 0, gp: "698.5" }, { g: 2, gp: "661.8" }, { g: 6, gp: "589.3" }, { g: 5, gp: "521.7" }, { g: 3, gp: "458.2" }, { g: 7, gp: "389.6" }, { g: 4, gp: "321.4" }]
   },
   {
-    userRank: 4, userGP: "612.8", attendance: "76.4", exams: 55, rating: "79.1", totalExams: 134, avgAttendance: "65.8", monthlyGoal: 980, achievementRatio: "58.7",
+    userRank: 4, userGP: "612.8", attendance: "76.4", exams: 55, rating: "79.1", totalExams: 134, avgAttendance: "65.8", monthlyGoal: 980,
     leaderboard: [{ g: 2, gp: "721.9" }, { g: 4, gp: "689.4" }, { g: 1, gp: "651.2" }, { g: 0, gp: "612.8" }, { g: 5, gp: "574.3" }, { g: 6, gp: "498.7" }, { g: 3, gp: "421.6" }, { g: 7, gp: "358.9" }]
   },
 ];
@@ -2393,56 +2393,6 @@ function examChartPcts(examName: string): number[] {
   return DAILY_GOAL_PCTS.map((pct, i) => (active.has(i) ? pct : 0));
 }
 
-type RankSort = "attendance" | "position" | "name" | "memberCount";
-
-const RANK_SORT_OPTIONS: Array<{ id: RankSort; label: string }> = [
-  { id: "attendance", label: "Attendance" },
-  { id: "position", label: "Position" },
-  { id: "name", label: "Name" },
-  { id: "memberCount", label: "Member Count" },
-];
-
-function RankSortBottomSheet({ value, onSelect, onClose }: { value: RankSort; onSelect: (v: RankSort) => void; onClose: () => void }) {
-  const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="absolute inset-0 z-50 flex flex-col justify-end bg-black/40"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "tween", duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-        className="bg-white rounded-tl-[16px] rounded-tr-[16px] shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pb-4"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex flex-col items-center p-4 shrink-0">
-          <div className="bg-[#787878] h-1 rounded-full w-8" />
-        </div>
-        <div className="flex flex-col">
-          {RANK_SORT_OPTIONS.map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => { onSelect(opt.id); onClose(); }}
-              className="h-14 flex items-center gap-4 px-4 active:bg-gray-50 transition-colors text-left"
-            >
-              <div className="relative size-5 shrink-0 rounded-full border-2 flex items-center justify-center" style={{ borderColor: value === opt.id ? "#1441cc" : "#787878" }}>
-                {value === opt.id && <div className="size-2.5 rounded-full bg-[#1441cc]" />}
-              </div>
-              <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-6" style={ns}>{opt.label}</span>
-            </button>
-          ))}
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
 function RankGroupDetailSheet({ group, gp, onClose }: { group: typeof RANK_GROUPS[number]; gp: string; onClose: () => void }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const rows: Array<[string, string]> = [
@@ -2475,7 +2425,7 @@ function RankGroupDetailSheet({ group, gp, onClose }: { group: typeof RANK_GROUP
 
         <div className="px-4 flex flex-col gap-4">
           <div className="bg-[#f4f6fa] rounded-[12px] p-3 flex items-center gap-3">
-            <GroupAvatar size={50} />
+            <GroupLogo size={50} seed={group.name} />
             <div className="flex-1 min-w-0 flex flex-col gap-1">
               <div className="flex items-center justify-between gap-2">
                 <span className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-black leading-5" style={ns}>{group.name}</span>
@@ -2715,11 +2665,114 @@ function MonthPickerModal({
 
 // ──────────────────────────────────────────────────────────────────────────────
 
+function drawConicSlice(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, startDeg: number, endDeg: number, color: string) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.arc(cx, cy, r, (startDeg - 90) * Math.PI / 180, (endDeg - 90) * Math.PI / 180);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+// Renders the member info card to a PNG and hands it off via the Web Share API
+// (when the device supports sharing files) or a browser download otherwise —
+// makes "Export as image" a real export instead of a dead button.
+function exportGroupRankCard(data: {
+  groupName: string; category: string; admin: string; createdDate: string;
+  rank: number; totalGroups: number; gp: string;
+  members: number; attendance: number; exams: number; rating: number;
+  logoSeed: number | string;
+}) {
+  const width = 720, height = 860;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.fillStyle = "#1441cc";
+  ctx.fillRect(0, 0, width, 88);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "600 30px 'Noto Sans', sans-serif";
+  ctx.textBaseline = "middle";
+  ctx.fillText("Group Rank", 32, 46);
+
+  const hash = typeof data.logoSeed === "string"
+    ? data.logoSeed.split("").reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 0)
+    : data.logoSeed;
+  const [pa, pb, pc] = GROUP_LOGO_PALETTES[hash % GROUP_LOGO_PALETTES.length];
+  const logoCx = 100, logoCy = 180, logoR = 56;
+  drawConicSlice(ctx, logoCx, logoCy, logoR, 0, 130, pa);
+  drawConicSlice(ctx, logoCx, logoCy, logoR, 130, 245, pb);
+  drawConicSlice(ctx, logoCx, logoCy, logoR, 245, 360, pc);
+
+  ctx.fillStyle = "#000000";
+  ctx.font = "500 30px 'Noto Sans', sans-serif";
+  ctx.fillText(data.groupName, 180, 160);
+  ctx.fillStyle = "#484848";
+  ctx.font = "400 20px 'Noto Sans', sans-serif";
+  ctx.fillText(`${data.category} · Created ${data.createdDate}`, 180, 200);
+  ctx.fillText(`Admin: ${data.admin}`, 180, 232);
+
+  ctx.strokeStyle = "#e3e3e3";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(32, 272);
+  ctx.lineTo(width - 32, 272);
+  ctx.stroke();
+
+  ctx.fillStyle = "#000000";
+  ctx.font = "600 26px Roboto, sans-serif";
+  ctx.fillText(`#${data.rank} of ${data.totalGroups}`, 32, 328);
+  ctx.fillStyle = "#264a34";
+  ctx.font = "600 22px 'Noto Sans', sans-serif";
+  ctx.fillText(`${data.gp} GP`, width - 200, 328);
+
+  const stats: Array<[string, string]> = [
+    [String(data.members), "Members"],
+    [`${data.attendance}%`, "Attendance"],
+    [String(data.exams), "Exams"],
+    [`${data.rating}%`, "Rating"],
+  ];
+  const colWidth = (width - 64) / stats.length;
+  stats.forEach(([val, label], i) => {
+    const x = 32 + colWidth * i + colWidth / 2;
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#000000";
+    ctx.font = "500 26px 'Noto Sans', sans-serif";
+    ctx.fillText(val, x, 400);
+    ctx.fillStyle = "#787878";
+    ctx.font = "400 18px 'Noto Sans', sans-serif";
+    ctx.fillText(label, x, 432);
+  });
+  ctx.textAlign = "left";
+
+  canvas.toBlob(blob => {
+    if (!blob) return;
+    const fileName = `${data.groupName.replace(/\s+/g, "-").toLowerCase()}-rank.png`;
+    const file = new File([blob], fileName, { type: "image/png" });
+    const nav = navigator as Navigator & { canShare?: (data?: ShareData) => boolean; share?: (data: ShareData) => Promise<void> };
+    if (nav.canShare && nav.share && nav.canShare({ files: [file] })) {
+      nav.share({ files: [file], title: data.groupName }).catch(() => {});
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }, "image/png");
+}
+
 function GroupRankContent({ monthIndex, selectedMonth }: { monthIndex: number; selectedMonth: Date }) {
   const ns = { fontVariationSettings: '"CTGR" 0, "wdth" 100' };
   const [showAdminDetails, setShowAdminDetails] = useState(false);
-  const [rankSort, setRankSort] = useState<RankSort>("position");
-  const [sortingRank, setSortingRank] = useState(false);
   const [selectedRankGroup, setSelectedRankGroup] = useState<number | null>(null);
   const [showFormula, setShowFormula] = useState(false);
 
@@ -2738,14 +2791,15 @@ function GroupRankContent({ monthIndex, selectedMonth }: { monthIndex: number; s
 
   const d = MONTHLY_RANK_DATA[monthIndex];
 
-  const sortedLeaderboard = d.leaderboard.slice().sort((a, b) => {
-    const ga = RANK_GROUPS[a.g];
-    const gb = RANK_GROUPS[b.g];
-    if (rankSort === "attendance") return gb.attendance - ga.attendance;
-    if (rankSort === "name") return ga.name.localeCompare(gb.name);
-    if (rankSort === "memberCount") return gb.members - ga.members;
-    return 0; // "position" — keep the authored leaderboard order
-  });
+  // Achievement ratio is the average of the chart's own active-day bars, not a
+  // separate hardcoded number — same derivation used on the exam-detail chart.
+  const activeDailyGoalPcts = DAILY_GOAL_PCTS.filter(pct => pct > 0);
+  const achievementRatio = activeDailyGoalPcts.length > 0
+    ? activeDailyGoalPcts.reduce((a, b) => a + b, 0) / activeDailyGoalPcts.length
+    : 0;
+
+  // Fixed rank order — no sort/filter control on the leaderboard.
+  const sortedLeaderboard = d.leaderboard;
 
   return (
     <div className="flex flex-col gap-6 items-center py-4">
@@ -2757,9 +2811,6 @@ function GroupRankContent({ monthIndex, selectedMonth }: { monthIndex: number; s
             since="17 Jul 2026"
             onClose={() => setShowAdminDetails(false)}
           />
-        )}
-        {sortingRank && (
-          <RankSortBottomSheet value={rankSort} onSelect={setRankSort} onClose={() => setSortingRank(false)} />
         )}
         {showFormula && <GroupPointsFormulaSheet onClose={() => setShowFormula(false)} />}
         {selectedRankGroup !== null && (
@@ -2832,6 +2883,27 @@ function GroupRankContent({ monthIndex, selectedMonth }: { monthIndex: number; s
               </div>
             ))}
           </div>
+          {/* Export as image */}
+          <button
+            onClick={() => exportGroupRankCard({
+              groupName: "The Winner",
+              category: "BCS",
+              admin: "Subroto Howlader",
+              createdDate: "1 Jul 2026",
+              rank: d.userRank,
+              totalGroups: 15,
+              gp: d.userGP,
+              members: MEMBER_LIST.length,
+              attendance: Number(d.attendance),
+              exams: d.exams,
+              rating: Number(d.rating),
+              logoSeed: GROUPS[0].id,
+            })}
+            className="flex items-center justify-center gap-1.5 h-10 rounded-[8px] border border-[#c7c7c7] active:bg-gray-50 transition-colors"
+          >
+            <Share2 className="size-4 text-[#484848]" strokeWidth={1.75} />
+            <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#484848] leading-[20px]" style={ns}>Export as image</span>
+          </button>
         </div>
       </div>
 
@@ -2878,23 +2950,16 @@ function GroupRankContent({ monthIndex, selectedMonth }: { monthIndex: number; s
             <div className="flex-1 flex flex-col gap-1">
               <p className="font-['Noto_Serif',serif] font-normal text-[12px] text-[#484848] leading-[16px]">Monthly goal</p>
               <p className="font-['Roboto',sans-serif] font-semibold text-[16px] text-black leading-[24px] tracking-[0.15px]">{d.monthlyGoal}</p>
-              <p className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#484848] leading-[16px]" style={ns}>{d.achievementRatio}% achievement ratio</p>
+              <p className="font-['Noto_Sans',sans-serif] font-medium text-[12px] text-[#484848] leading-[16px]" style={ns}>{achievementRatio.toFixed(1)}% achievement ratio</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Leaderboard */}
+      {/* Leaderboard — fixed rank order, no sort/filter control */}
       <div className="w-full flex flex-col gap-4 pb-4">
-        <div className="px-4 flex items-center justify-between h-10">
+        <div className="px-4 flex items-center h-10">
           <span className="font-['Noto_Sans',sans-serif] font-medium text-[16px] text-black leading-[24px] tracking-[0.15px]" style={ns}>Leaderboard</span>
-          <button
-            onClick={() => setSortingRank(true)}
-            aria-label="Sort leaderboard"
-            className="size-12 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors -mr-3"
-          >
-            <ArrowUpDown className="size-5 text-black" strokeWidth={1.5} />
-          </button>
         </div>
         <div className="flex flex-col gap-2 px-4">
           {sortedLeaderboard.map((entry, i) => {
@@ -3118,14 +3183,14 @@ function pctToChip(pct: number): AttendanceChip {
 // ── Subgroup data ─────────────────────────────────────────────────────────────
 
 const SUBGROUPS = [
-  { letter: "A", captain: "Atiqul Haque", members: 10, attended: 10, goalPct: 96.0, monthlyGoalPct: 33.0, isMyGroup: true, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "B", captain: "রাকিবুল শেখ", members: 6, attended: 3, goalPct: 50.5, monthlyGoalPct: 50.5, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "C", captain: "ফারহান রানা", members: 8, attended: 2, goalPct: 20.0, monthlyGoalPct: 20.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "D", captain: "রায়হান আকরাম", members: 12, attended: 10, goalPct: 85.0, monthlyGoalPct: 85.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "E", captain: "বায়েজিদ ইসলাম", members: 6, attended: 4, goalPct: 70.0, monthlyGoalPct: 70.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "F", captain: "তাহমিনা সুলতানা", members: 6, attended: 3, goalPct: 45.0, monthlyGoalPct: 45.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "G", captain: "আসাদুজ্জামান কবির", members: 4, attended: 4, goalPct: 92.0, monthlyGoalPct: 92.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
-  { letter: "H", captain: "ঐশী হক", members: 12, attended: 4, goalPct: 33.0, monthlyGoalPct: 33.0, isMyGroup: false, captainRating: 4.5, captainSince: "17 Jul 2026" },
+  { letter: "A", captain: "Atiqul Haque", members: 10, attended: 10, goalPct: 96.0, monthlyGoalPct: 33.0, isMyGroup: true, captainSince: "17 Jul 2026" },
+  { letter: "B", captain: "রাকিবুল শেখ", members: 6, attended: 3, goalPct: 50.5, monthlyGoalPct: 50.5, isMyGroup: false, captainSince: "17 Jul 2026" },
+  { letter: "C", captain: "ফারহান রানা", members: 8, attended: 2, goalPct: 20.0, monthlyGoalPct: 20.0, isMyGroup: false, captainSince: "17 Jul 2026" },
+  { letter: "D", captain: "রায়হান আকরাম", members: 12, attended: 10, goalPct: 85.0, monthlyGoalPct: 85.0, isMyGroup: false, captainSince: "17 Jul 2026" },
+  { letter: "E", captain: "বায়েজিদ ইসলাম", members: 6, attended: 4, goalPct: 70.0, monthlyGoalPct: 70.0, isMyGroup: false, captainSince: "17 Jul 2026" },
+  { letter: "F", captain: "তাহমিনা সুলতানা", members: 6, attended: 3, goalPct: 45.0, monthlyGoalPct: 45.0, isMyGroup: false, captainSince: "17 Jul 2026" },
+  { letter: "G", captain: "আসাদুজ্জামান কবির", members: 4, attended: 4, goalPct: 92.0, monthlyGoalPct: 92.0, isMyGroup: false, captainSince: "17 Jul 2026" },
+  { letter: "H", captain: "ঐশী হক", members: 12, attended: 4, goalPct: 33.0, monthlyGoalPct: 33.0, isMyGroup: false, captainSince: "17 Jul 2026" },
 ];
 
 // ── Shared: progress bar for subgroup goal ────────────────────────────────────
@@ -3848,11 +3913,7 @@ function CaptainDetailsBottomSheet({ sg, onClose }: { sg: SubgroupData; onClose:
           <MemberAvatar size={56} name={sg.captain} />
           <div className="flex flex-col gap-1 min-w-0">
             <p className="font-['Noto_Sans',sans-serif] font-medium text-[18px] text-black leading-[26px] truncate" style={ns}>{sg.captain}</p>
-            <div className="flex items-center gap-1.5">
-              <Star className="size-4 text-[#f5c518] fill-[#f5c518] shrink-0" />
-              <span className="font-['Noto_Sans',sans-serif] font-semibold text-[14px] text-black leading-[20px]">{sg.captainRating.toFixed(1)}</span>
-              <span className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#787878] leading-[20px]">Captain since: {sg.captainSince}</span>
-            </div>
+            <span className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-[#787878] leading-[20px]">Captain since: {sg.captainSince}</span>
           </div>
         </div>
 
@@ -4101,7 +4162,7 @@ function SubgroupDetailScreen({ onBack, sg, onTodayGoal, onMonthlyGoal }: { onBa
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
-                      <RatingBadge letter={sg.letter} />
+                      <RatingBadge letter={member.rating} />
                       <div className="rounded-[16px] px-3 py-1 shrink-0" style={{ backgroundColor: chip.bg }}>
                         <span
                           className="font-['Noto_Sans',sans-serif] font-medium text-[12px] leading-[16px]"
@@ -4387,7 +4448,7 @@ function ExamAttendanceMembersScreen({ onBack, subgroupLetter, targetPct }: { on
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
-                      <RatingBadge letter={subgroupLetter ?? member.rating} />
+                      <RatingBadge letter={member.rating} />
                       <div className="rounded-[16px] h-6 px-3 flex items-center justify-center shrink-0" style={{ backgroundColor: chip.bg }}>
                         <span
                           className="font-['Noto_Sans',sans-serif] font-medium text-[12px] leading-[16px]"
@@ -4613,7 +4674,7 @@ function MonthlyGoalExamDetailScreen({ examName, sg, override, examTotals, onBac
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
-                      <RatingBadge letter={override ? member.rating : sg.letter} />
+                      <RatingBadge letter={member.rating} />
                       <div className="rounded-[4px] h-6 px-2 flex items-center justify-center shrink-0" style={{ backgroundColor: chip.bg }}>
                         <span className="font-['Noto_Sans',sans-serif] text-[12px] font-normal" style={{ color: chip.text }}>{member.pct.toFixed(1)}%</span>
                       </div>
