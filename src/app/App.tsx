@@ -4175,24 +4175,6 @@ function SubgroupListScreen({ onBack, group, onDetail }: { onBack: () => void; g
             </span>
           </div>
         </div>
-        {/* Goal progress */}
-        <div className="flex flex-col gap-2 w-full">
-          <div className="flex items-center justify-between w-full">
-            <span
-              className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-black leading-[20px]"
-              style={ns}
-            >
-              {"Today's goal"}
-            </span>
-            <span
-              className="font-['Noto_Sans',sans-serif] font-normal text-[14px] text-black leading-[20px]"
-              style={ns}
-            >
-              {sg.goalPct.toFixed(1)}%
-            </span>
-          </div>
-          <SubgroupProgressBar pct={sg.goalPct} />
-        </div>
       </div>
     );
   }
