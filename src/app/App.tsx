@@ -6,7 +6,7 @@ import {
   ArrowLeft, ChevronDown, Check, Info, AlertCircle,
   UserPlus, Search, ArrowUpDown, ChevronRight,
   ThumbsUp, MessageCircle, Share2, Send, Globe, MoreHorizontal, ImageIcon, Star, User, Users,
-  CalendarDays, Archive, ClipboardCheck, Trophy, FileText, Copy, Pencil, X, Gift, Headphones, Sprout,
+  CalendarDays, Archive, ClipboardCheck, Trophy, FileText, Pencil, X, Gift, Headphones, Sprout,
   Filter, Calendar, Clock, Award, PlaySquare, FileSpreadsheet, BarChart3,
   type LucideIcon,
 } from "lucide-react";
@@ -3271,7 +3271,7 @@ function zoneBarColor(pct: number) {
 // Joining Requests detail sheet, minus the notes/accept-reject (not applicable to an existing member).
 const MEMBER_MONTHLY_EXAM_TOTAL = 300;
 
-function MemberDetailSheet({ member, onClose, hideContactRow }: { member: Member; onClose: () => void; hideContactRow?: boolean }) {
+function MemberDetailSheet({ member, onClose }: { member: Member; onClose: () => void }) {
   const infoRows: Array<[string, string]> = [
     ["Preparing for", member.preparingFor],
     ["Gender", member.gender],
@@ -3281,15 +3281,6 @@ function MemberDetailSheet({ member, onClose, hideContactRow }: { member: Member
     ["Home district", member.district],
   ];
   const attended = Math.round((member.pct / 100) * MEMBER_MONTHLY_EXAM_TOTAL);
-  const [copied, setCopied] = useState(false);
-
-  function copyDetails() {
-    const text = `${member.name}\nID: ${member.memberId}\nUser since: ${member.since}\nLevel ${member.level} • Total exam: ${member.exams}`;
-    navigator.clipboard?.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
-  }
 
   return (
     <motion.div
@@ -3330,18 +3321,6 @@ function MemberDetailSheet({ member, onClose, hideContactRow }: { member: Member
                 <span className="font-['Noto_Sans',sans-serif] text-[14px] text-black leading-5">Level {member.level}</span>
                 <span className="font-['Noto_Sans',sans-serif] text-[14px] text-black leading-5">Total exam: {member.exams}</span>
               </div>
-              {!hideContactRow && (
-                <div className="flex items-center gap-4">
-                  <button className="h-9 flex items-center gap-1.5 px-3 rounded-full border border-[#c7c7c7] active:bg-gray-50 transition-colors">
-                    <MessageCircle className="size-4 text-green-600" strokeWidth={1.75} />
-                    <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5">Contact</span>
-                  </button>
-                  <button onClick={copyDetails} className="flex items-center gap-1.5 active:opacity-70 transition-opacity">
-                    {copied ? <Check className="size-4 text-green-600" strokeWidth={2} /> : <Copy className="size-4 text-[#1441cc]" strokeWidth={1.75} />}
-                    <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-[#1441cc] leading-5">{copied ? "Copied" : "Copy details"}</span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -4425,7 +4404,7 @@ function ExamAttendanceMembersScreen({ onBack, subgroupLetter, targetPct }: { on
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden relative">
       <AnimatePresence>
-        {selected && <MemberDetailSheet member={selected} hideContactRow onClose={() => setSelected(null)} />}
+        {selected && <MemberDetailSheet member={selected} onClose={() => setSelected(null)} />}
         {sorting && <SortBottomSheet value={sortBy} onSelect={setSortBy} onClose={() => setSorting(false)} options={SUBGROUP_MEMBER_SORT_OPTIONS} />}
       </AnimatePresence>
 
@@ -4546,7 +4525,7 @@ function ExamAttendMembersScreen({ examName, attended, onBack, subgroupLetter }:
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden relative">
       <AnimatePresence>
-        {selected && <MemberDetailSheet member={selected} hideContactRow onClose={() => setSelected(null)} />}
+        {selected && <MemberDetailSheet member={selected} onClose={() => setSelected(null)} />}
         {sorting && <SortBottomSheet value={sortBy} onSelect={setSortBy} onClose={() => setSorting(false)} options={SUBGROUP_MEMBER_SORT_OPTIONS} />}
       </AnimatePresence>
 
