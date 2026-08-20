@@ -3706,6 +3706,16 @@ function GoalDetailScreen({ mode, sg, onBack, onSelectExam, onViewAttendance, ov
 
   const chipColor = pctChipStyle(goalPct);
 
+  // Monthly goal's own daily chart — same bars/coloring as the group-rank and
+  // per-exam charts, with achievement ratio derived from its own active-day
+  // bars rather than a separate hardcoded number.
+  const monthlyChartPcts = DAILY_GOAL_PCTS;
+  const activeMonthlyChartPcts = monthlyChartPcts.filter(pct => pct > 0);
+  const monthlyChartAchievementRatio = activeMonthlyChartPcts.length > 0
+    ? activeMonthlyChartPcts.reduce((a, b) => a + b, 0) / activeMonthlyChartPcts.length
+    : 0;
+  const bigCountLabel = bigCount >= 1000 ? `${(bigCount / 1000).toFixed(1)} K` : String(bigCount);
+
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden relative">
       <AnimatePresence>
@@ -3802,6 +3812,31 @@ function GoalDetailScreen({ mode, sg, onBack, onSelectExam, onViewAttendance, ov
               </button>
             </div>
           </div>
+
+          {/* Monthly goal chart */}
+          {mode === "monthly" && (
+            <div className="bg-[#f4f6fa] rounded-[16px] p-3 flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5" style={ns}>Monthly goal</span>
+                <span className="font-['Noto_Sans',sans-serif] font-medium text-[14px] text-black leading-5" style={ns}>{bigCountLabel}</span>
+              </div>
+              <div className="grid gap-x-1 h-[100px] items-end" style={{ gridTemplateColumns: `repeat(${monthlyChartPcts.length}, minmax(0, 1fr))` }}>
+                {monthlyChartPcts.map((pct, i) => (
+                  <div key={i} className="relative h-full w-full rounded-full overflow-hidden bg-[#e3e3e3]">
+                    {pct > 0 && (
+                      <div className="absolute bottom-0 left-0 right-0 rounded-full" style={{ height: `${pct}%`, backgroundColor: zoneBarColor(pct) }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between">
+                {[1, 10, 20, monthlyChartPcts.length].map(day => (
+                  <span key={day} className="font-['Noto_Sans',sans-serif] font-medium text-[10px] text-[#8f8d8d] leading-4" style={ns}>{day}</span>
+                ))}
+              </div>
+              <span className="text-center font-['Noto_Sans',sans-serif] font-medium text-[12px] text-black leading-4" style={ns}>{monthlyChartAchievementRatio.toFixed(1)}% achievement ratio</span>
+            </div>
+          )}
 
           {/* Mandatory exam list */}
           <div className="flex flex-col gap-3">
